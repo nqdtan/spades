@@ -1,0 +1,133 @@
+diff --git a/src/com/xilinx/rapidwright/edif/EDIFNetlist.java b/src/com/xilinx/rapidwright/edif/EDIFNetlist.java
+index b2ddc7ff..f419812a 100644
+--- a/src/com/xilinx/rapidwright/edif/EDIFNetlist.java
++++ b/src/com/xilinx/rapidwright/edif/EDIFNetlist.java
+@@ -1952,4 +1952,128 @@ public class EDIFNetlist extends EDIFName {
+         n.exportEDIF(args[1]);
+         t.stop().printSummary();
+     }
++
++    // nqdtan -- for spades
++    private EDIFCell cloneNetlistFromTopCellWorker(EDIFCell cell, EDIFCell topCellRef, EDIFCell destTopCell) {
++        EDIFLibrary destLib;
++        if (cell.getLibrary().getName().contains("primitives")) {
++            destLib = getHDIPrimitivesLibrary();
++        } else {
++            destLib = destTopCell.getLibrary(); // work lib of the target top cell
++        }
++
++        EDIFCell existingCell = destLib.getCell(cell.getName());
++        if(existingCell == null){
++            //destLib.addCell(cell);
++            EDIFCell newCell;
++            if (cell == topCellRef)
++                newCell = destTopCell;
++            else
++                newCell = new EDIFCell(destLib, cell.getName());
++            newCell.setView(cell.getName());
++            // copy port
++            for (EDIFPort ep : cell.getPorts()) {
++                EDIFPort newPort = ep.isBus() ?
++                    newCell.getPort(ep.getBusName()) :
++                    newCell.getPort(ep.getName());
++
++                // potential matching scalar (non-bus) port that has the same name
++                if (newPort == null || (ep.isBus() && !newPort.isBus()) || (!ep.isBus() && newPort.isBus())) {
++                    newPort = new EDIFPort(ep);
++                    newPort.setParentCell(newCell);
++                    newCell.addPort(newPort);
++                }
++            }
++
++            // copy logical cell inst
++            for(EDIFCellInst inst : cell.getCellInsts()){
++                EDIFCell cellType = cloneNetlistFromTopCellWorker(inst.getCellType(), topCellRef, destTopCell);
++                if (newCell.getCellInst(inst.getName()) != null)
++                    continue;
++                EDIFCellInst newInst = new EDIFCellInst(inst.getName(), cellType, newCell);
++
++                //The view might have changed
++                newInst.getViewref().setName(newInst.getCellType().getName());
++                EDIFTools.ensureCellInLibraries(this, inst.getCellType());
++                newInst.setPropertiesMap(inst.getPropertiesMap());
++            }
++
++            // copy logical nets
++            for (EDIFNet enet : cell.getNets()) {
++                if (destTopCell.getNet(enet.getName()) != null)
++                    continue;
++                EDIFNet newEnet = new EDIFNet(enet.getName(), newCell);
++
++                // copy PortInst
++                for (EDIFPortInst epi : enet.getPortInsts()) {
++                    EDIFCell cell0 = epi.getPort().getParentCell();
++                    if (cell0.getLibrary().getName().contains("primitives")) {
++                        destLib = getHDIPrimitivesLibrary();
++                    } else {
++                        destLib = destTopCell.getLibrary(); // work lib of the target top cell
++                    }
++
++                    EDIFCell parentNewCell = destLib.getCell(cell0.getName());
++                    if (cell0 == topCellRef)
++                        parentNewCell = destTopCell;
++
++                    EDIFPort newPort = epi.getPort().isBus() ?
++                        parentNewCell.getPort(epi.getPort().getBusName()) :
++                        parentNewCell.getPort(epi.getPort().getName());
++
++                    if (newPort == null) {
++                        newPort = new EDIFPort(epi.getPort());
++                        newPort.setParentCell(parentNewCell);
++                        parentNewCell.addPort(newPort);
++                    }
++
++                    // This might happen
++                    if (epi.getPort().isBus() && !newPort.isBus()) {
++                        for (EDIFPort p : parentNewCell.getPorts()) {
++                            if (p.isBus() && p.getBusName().equals(epi.getPort().getBusName())) {
++                                newPort = p;
++                                break;
++                            }
++                        }
++                    }
++
++                    EDIFCell parentECell = null;
++                    if (epi.getCellInst() != null) {
++                        if (epi.getCellInst().getParentCell().getLibrary().getName().contains("primitives")) {
++                            destLib = getHDIPrimitivesLibrary();
++                        } else {
++                            destLib = destTopCell.getLibrary(); // work lib of the target top cell
++                        }
++                        parentECell = destLib.getCell(epi.getCellInst().getParentCell().getName());
++                        if (epi.getCellInst().getParentCell() == topCellRef)
++                            parentECell = destTopCell;
++                    }
++
++                    EDIFPortInst newEpi = null;
++                    if (epi.getPort().isBus()) {
++                        if (epi.getCellInst() == null)
++                            newEpi = newEnet.createPortInst(newPort, epi.getIndex());
++                        else {
++                            newEpi = newEnet.createPortInst(newPort, epi.getIndex(), parentECell.getCellInst(epi.getCellInst().getName()));
++                        }
++                    } else {
++                        if (epi.getCellInst() == null)
++                            newEpi = newEnet.createPortInst(newPort);
++                        else {
++                            newEpi = newEnet.createPortInst(newPort, parentECell.getCellInst(epi.getCellInst().getName()));
++                        }
++                    }
++                }
++            }
++
++            return newCell;
++        } else {
++            return existingCell;
++        }
++    }
++
++    // nqdtan -- for spades
++    public void cloneNetlistFromTopCell(EDIFCell cell, EDIFCell destTopCell) {
++        cloneNetlistFromTopCellWorker(cell, cell, destTopCell);
++    }
+ }

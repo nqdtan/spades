@@ -1,0 +1,26 @@
+
+- Install RapidWright from [RapidWright repository](https://github.com/Xilinx/RapidWright/).
+The spades repository is set up such that rapidwright/ points to RapidWright source repository
+(e.g., as a submodule). You can copy the RapidWright source here or create a symlink to achieve this.
+
+- Copy spades/rapidwright/spades to {RapidWright_repo}/src/com/xilinx/rapidwright/
+
+- Apply the git patch as follows
+
+git apply patch edifnetlist.patch
+
+to update {RapidWright_repo}/src/com/xilinx/rapidwright/edif/EDIFNetlist.java
+with some methods required by the flow.
+
+- spades/rapidwright/spades_config contains several JSON config file examples
+for the SPADES flow. A SPADES JSON config file describes how many sockets are
+required for design assembly as well as their NoC connectivity.
+
+- Available commands
+
+./run_rw.sh FFBridgeExtract: extract ff_bridge cells implemented in spades/checkpoints/socket_cc.dcp.
+
+./run_rw.sh SocketStitch: combine Socket CC checkpoint (spades/checkpoints/socket_cc.dcp) and Socket CL checkpoint (spades/checkpoints/socket_rg_cl.dcp).
+
+./run_rw.sh SpadesFlow spades_config/9_socket_m.json: assemble 9 sockets to produce a full design checkpoint (spades/checkpoints/full_design.dcp)
+

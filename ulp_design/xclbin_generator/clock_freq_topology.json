@@ -1,0 +1,17 @@
+{
+    "clock_freq_topology": {
+        "m_count": "2",
+        "m_clock_freq": [
+            {
+                "m_freq_Mhz": "100",
+                "m_type": "KERNEL",
+                "m_name": "KERNEL_CLK"
+            },
+            {
+                "m_freq_Mhz": "490",
+                "m_type": "DATA",
+                "m_name": "DATA_CLK"
+            }
+        ]
+    }
+}

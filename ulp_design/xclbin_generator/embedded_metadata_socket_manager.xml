@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="custom">
+  <platform vendor="xilinx" boardid="vck5000" name="gen4x8_qdma_2" featureRomTime="0">
+    <version major="202120" minor="1"/>
+    <description/>
+    <board name="xilinx.com:vck5000:1.0" vendor="xilinx.com" fpga="xcvc1902-vsvd1760-2MP-e-S">
+      <interfaces>
+        <interface id="int1" name="PCIe" type="gen4x8"/>
+      </interfaces>
+      <memories>
+        <memory name="mem0" type="ddr4" size="8GB"/>
+      </memories>
+      <images>
+        <image name="vck5000_image.jpg" type="HDPI"/>
+        <image name="" type="MDPI"/>
+        <image name="" type="LDPI"/>
+      </images>
+      <id>
+        <vendor>0x10ee</vendor>
+        <device>0x5048</device>
+        <subsystem>0x000e</subsystem>
+      </id>
+    </board>
+    <build_flow/>
+    <host architecture="x86_64"/>
+    <device name="fpga0" fpgaDevice="versal:xcvc1902:vsvd1760:-2MP:e:S">
+      <core name="OCL_REGION_0">
+        <kernel name="socket_manager">
+          <port name="s_axi_control" mode="slave" range="0x1000" dataWidth="32" portType="addressable" base="0x0"/>
+          <arg name="offset_lo" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x010" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="offset_hi" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x014" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="wr_idle" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x018" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="socket_rdata" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x01c" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="socket_wdata" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x020" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="socket_rcnt" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x024" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="socket_wcnt" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x028" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="rd_idle" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x02c" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="mbufgce_ce" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x030" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="mbufgce_clr" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x034" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="socket_enq" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x038" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="socket_deq" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x03c" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <arg name="socket_status" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x040" hostOffset="0x0" hostSize="0x4" type="uint"/>
+          <instance name="socket_manager">
+            <addrRemap base="0x0000000" range="0x10000" port="s_axi_control"/>
+          </instance>
+        </kernel>
+      </core>
+    </device>
+  </platform>
+</project>
