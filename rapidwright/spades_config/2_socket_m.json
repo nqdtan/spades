@@ -5,7 +5,13 @@
       "DesignId": 0,
       "ImplId": 0,
       "Flow": "separateCCCL",
-      "DcpName": "socket_rw_full_v0"
+      "DcpName": "socket1"
+    },
+    {
+      "DesignId": 1,
+      "ImplId": 0,
+      "Flow": "standalone",
+      "DcpName": "socket0"
     }
   ],
   "SocketIds": [
@@ -13,19 +19,13 @@
       "SocketId": 0,
       "DesignId": 0,
       "XOffset": -2,
-      "YOffset": 0
+      "YOffset": -1
     },
     {
       "SocketId": 1,
-      "DesignId": 0,
-      "XOffset": 0,
-      "YOffset": 0
-    },
-    {
-      "SocketId": 2,
-      "DesignId": 0,
+      "DesignId": 1,
       "XOffset": 2,
-      "YOffset": 0
+      "YOffset": 1
     }
   ],
   "SocketConnects": [
@@ -36,23 +36,9 @@
       "NSUName": "M00",
       "Type": "AXI"
     },
-    {
-      "NMUSocketId": 0,
-      "NSUSocketId": 2,
-      "NMUName": "S00",
-      "NSUName": "M00",
-      "Type": "AXI"
-    },
 
     {
       "NMUSocketId": 1,
-      "NSUSocketId": 0,
-      "NMUName": "S00",
-      "NSUName": "M00",
-      "Type": "AXI"
-    },
-    {
-      "NMUSocketId": 2,
       "NSUSocketId": 0,
       "NMUName": "S00",
       "NSUName": "M00",
@@ -82,24 +68,11 @@
     },
     {
       "NMUSocketId": 1,
-      "NSUSocketId": 28,
-      "NMUName": "S01",
-      "NSUName": "3",
-      "Type": "AXI"
-    },
-    {
-      "NMUSocketId": 2,
-      "NSUSocketId": 28,
-      "NMUName": "S00",
-      "NSUName": "2",
-      "Type": "AXI"
-    },
-    {
-      "NMUSocketId": 2,
       "NSUSocketId": 28,
       "NMUName": "S01",
       "NSUName": "3",
       "Type": "AXI"
     }
+
   ]
 }

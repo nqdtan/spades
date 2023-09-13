@@ -101,32 +101,8 @@ with the new xsabin.
 The compatible shell checkpoint (used in this project) is available in the SPADES assets.
 spades_assets/ulp_design/utils/xilinx_vck5000_gen4x8_qdma_2_202220_1_bb_locked.dcp
 
-The following steps will show you how to obtain a compatible xsabin from the new shell checkpoint.
-
-```
-TODO: update with commands
-
-- Obtain *.pdi file from *.xsabin using xclbinutil                               
-                                                                                 
-- The hw platform files can be extracted from *.xsa file with the command        
-open_hw_platform                                                                 
-                                                                                 
-- Replace the original shell dcp with the new shell dcp (updated net routing to  
-ensure no route conflict in socket region). Then open the project created by        
-open_hw_platform. Run write_device_image. It will generate top_wrapper.rcdo         
-and top_wrapper.rnpi for the new PL implementation. We then use them to generate 
-a new PDI with this version of bootgen
-https://github.com/nqdtan/bootgen
-
-- After that, we use xclbinutil to generate a new xsabin.  
-Program the card with this new xsabin.                                           
-                                                                                 
-- One very crucial step in generating a new shell PL implementation is to set       
-the ROM UUID to the UUID of the platform. Otherwise, XRT will fail to load the firmware.
-Use the TCL script from the shell_rom of iprepo to source the commands, and use  
-update_rom_uuid command to write the correct UUID to the ROM. This step could be  
-add to the pre OPT script (if using tcl hooks).
-```
+Follow the instructions (platform_xsabin_gen/README.md)[https://github.com/nqdtan/spades/tree/main/platform_xsabin_gen]
+to obtain a compatible xsabin from the new shell checkpoint.
 
 ## Example of how to run benchmark matmul (step-by-step)
 

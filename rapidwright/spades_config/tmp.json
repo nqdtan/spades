@@ -1,10 +1,9 @@
 {
-  "FullShell": true,
+  "FullShell": false,
+  "SeparateCCCLFlow": false,
   "SocketDesigns": [
     {
       "DesignId": 0,
-      "ImplId": 0,
-      "Flow": "separateCCCL",
       "DcpName": "socket_rw_full_v0"
     }
   ],

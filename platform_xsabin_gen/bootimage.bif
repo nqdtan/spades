@@ -1,0 +1,25 @@
+all:
+{
+    image
+    {
+        { type=bootimage, file=partition.pdi }
+    }
+    image
+    {
+      name = pl_cfi
+      id = 0x18700000
+      partition
+      {
+        id = 0x03
+        type = cdo
+        file = top_wrapper.rcdo
+      }
+      partition
+      {
+        id = 0x05
+        type = cdo
+        file = top_wrapper.rnpi
+      }
+    }
+}
+

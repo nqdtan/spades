@@ -3,6 +3,7 @@
 # Set the path to this repository
 ROOTDIR=/my/spades
 
+sed -i "s|/path/to/spades|"${ROOTDIR}"|g" ./rapidwright/install_rw.sh
 sed -i "s|/path/to/spades|"${ROOTDIR}"|g" ./rapidwright/run_rw.sh
 sed -i "s|/path/to/spades|"${ROOTDIR}"|g" ./rtl/run_sim_socket_top.sh
 sed -i "s|/path/to/spades|"${ROOTDIR}"|g" ./rtl/run_ivsim_socket_top.sh

@@ -61,7 +61,7 @@ public class SpadesFlow {
     return llCRY + yOffset;
   }
 
-  public static Tile getRelocTile(Tile t, int relocCRX, int relocCRY, int designId) {
+  public static Tile getRelocTile(Tile t, int relocCRX, int relocCRY, int implId) {
     ClockRegion origCR = t.getClockRegion();
     int colOffset = (relocCRX / 2) * socketTileWidth;
     int rowOffset = (relocCRY / 1) * socketTileHeight;
@@ -242,12 +242,12 @@ public class SpadesFlow {
   }
 
   public static Cell copyCellCustom(Design d, EDIFNetlist nl, Cell c,
-                                    int socketId, int relocCROffsetX, int relocCROffsetY, int designId) {
+                                    int socketId, int relocCROffsetX, int relocCROffsetY, int implId) {
     SiteInst origSI = c.getSiteInst();
     Site origSite = origSI.getSite();
     Site relocSite = origSite.getCorrespondingSite(
       origSI.getSiteTypeEnum(),
-      getRelocTile(origSite.getTile(), relocCROffsetX, relocCROffsetY, designId));
+      getRelocTile(origSite.getTile(), relocCROffsetX, relocCROffsetY, implId));
     SiteInst newSI = d.getSiteInst(relocSite.getName());
     if (newSI == null) {
       newSI = d.createSiteInst(relocSite.getName(), origSI.getSiteTypeEnum(), relocSite);
@@ -284,7 +284,7 @@ public class SpadesFlow {
     HashMap<Integer, HashSet<Cell>> nsuAXIMap,
     HashMap<Integer, HashSet<Cell>> nmuAXISMap,
     HashMap<Integer, HashSet<Cell>> nsuAXISMap,
-    HashMap<SiteInst, HashSet<String>> toRemoveSiteWireMap, int designId) {
+    HashMap<SiteInst, HashSet<String>> toRemoveSiteWireMap, int implId) {
 
     Net vccNet = dstDesign.getNet("GLOBAL_LOGIC1");
     HashSet<Cell> nmuAXICells = new HashSet<>();
@@ -294,7 +294,7 @@ public class SpadesFlow {
 
     for (Cell c : srcDesign.getCells()) {
       Cell newCell = copyCellCustom(dstDesign, dstNetlist, c,
-                                    id, offsetX, offsetY, designId);
+                                    id, offsetX, offsetY, implId);
       if (newCell == null) {
         System.out.println("Error! Could not place cell " + c.getName());
         System.exit(0);
@@ -354,7 +354,7 @@ public class SpadesFlow {
                                       String netPrefixName,
                                       int offsetX,
                                       int offsetY,
-                                      int designId
+                                      int implId
                                       ) {
     Device dev = dstDesign.getDevice();
     for (Net net : srcDesign.getNets()) {
@@ -385,7 +385,7 @@ public class SpadesFlow {
           SiteInst origSI = spi.getSiteInst();
           Site relocSite = origSI.getSite().getCorrespondingSite(
             origSI.getSiteTypeEnum(),
-            getRelocTile(origSI.getSite().getTile(), offsetX, offsetY, designId));
+            getRelocTile(origSI.getSite().getTile(), offsetX, offsetY, implId));
           SiteInst newSI = dstDesign.getSiteInstFromSite(relocSite);
           if (newSI == null)
             newSI = dstDesign.createSiteInst(relocSite.getName(), origSI.getSiteTypeEnum(), relocSite);
@@ -400,7 +400,7 @@ public class SpadesFlow {
       for (SiteInst origSI : net.getSiteInsts()) {
         Site relocSite = origSI.getSite().getCorrespondingSite(
           origSI.getSiteTypeEnum(),
-          getRelocTile(origSI.getSite().getTile(), offsetX, offsetY, designId));
+          getRelocTile(origSI.getSite().getTile(), offsetX, offsetY, implId));
         SiteInst newSI = dstDesign.getSiteInstFromSite(relocSite);
         if (newSI == null)
           newSI = dstDesign.createSiteInst(relocSite.getName(), origSI.getSiteTypeEnum(), relocSite);
@@ -428,7 +428,7 @@ public class SpadesFlow {
       HashSet<PIP> pipSet = new HashSet<>();
       pipSet.addAll(newNet.getPIPs());
       for (PIP pip : net.getPIPs()) {
-        Tile relocTile = getRelocTile(pip.getTile(), offsetX, offsetY, designId);
+        Tile relocTile = getRelocTile(pip.getTile(), offsetX, offsetY, implId);
         PIP relocPIP0 = relocTile.getPIP(
           pip.getStartWireIndex(),
           pip.getEndWireIndex());
@@ -485,7 +485,6 @@ public class SpadesFlow {
     // select between full shell (BLP + ULP static) or partial shell (ULP static)
     // non-full shell is for debugging purpose because it loads faster
     boolean FullShell = jsoCfg.getBoolean("FullShell");
-    boolean SeparateCCCLFlow = jsoCfg.getBoolean("SeparateCCCLFlow");
 
     String shellPrefix = fullShellPrefix;
     if (!FullShell) {
@@ -499,16 +498,18 @@ public class SpadesFlow {
     Design socket_design = null;
     EDIFNetlist socket_netlist;
 
-    HashMap<Integer, Design> socketDesigns = new HashMap<>();
+    HashMap<Integer, Pair<Pair<Integer, String>, Design>> socketDesigns = new HashMap<>();
 
     JSONArray jsoSocketDesigns = jsoCfg.getJSONArray("SocketDesigns");
     for (int i = 0; i < jsoSocketDesigns.length(); i++) {
       JSONObject jsoSocketDesign = jsoSocketDesigns.getJSONObject(i);
       int DesignId = jsoSocketDesign.getInt("DesignId");
+      int ImplId = jsoSocketDesign.getInt("ImplId");
+      String Flow = jsoSocketDesign.getString("Flow");
       String DcpName = jsoSocketDesign.getString("DcpName");
       Design socketDesignX = Design.readCheckpoint("../checkpoints/" + DcpName + ".dcp",
                                                    "../checkpoints/" + DcpName + ".edf");
-      socketDesigns.put(DesignId, socketDesignX);
+      socketDesigns.put(DesignId, new Pair(new Pair(ImplId, Flow), socketDesignX));
     }
 
     // SOCKET <socket_id, design_id, x_offset, y_offset>
@@ -689,7 +690,8 @@ public class SpadesFlow {
       int relocCROffsetX = entry0.getValue().getSecond().getFirst();
       int relocCROffsetY = entry0.getValue().getSecond().getSecond();
 
-      socket_design = socketDesigns.get(designId);
+      int implId = socketDesigns.get(designId).getFirst().getFirst();
+      socket_design = socketDesigns.get(designId).getSecond();
       socket_netlist = socket_design.getNetlist();
 
       shell_netlist.addLibrary(new EDIFLibrary("work_socket" + i));
@@ -710,7 +712,7 @@ public class SpadesFlow {
         SiteTypeEnum type = site.getSiteTypeEnum();
         Site relocSite = site.getCorrespondingSite(
           type,
-          getRelocTile(site.getTile(), relocCROffsetX, relocCROffsetY, designId));
+          getRelocTile(site.getTile(), relocCROffsetX, relocCROffsetY, implId));
 
         SiteConfig siteConfig = entry.getValue();
         for (Map.Entry<BEL, Map<String, BELAttr>> entry1 : siteConfig.getBELAttributes().entrySet()) {
@@ -774,14 +776,15 @@ public class SpadesFlow {
       int relocCROffsetX = entry0.getValue().getSecond().getFirst();
       int relocCROffsetY = entry0.getValue().getSecond().getSecond();
 
-      socket_design = socketDesigns.get(designId);
+      int implId = socketDesigns.get(designId).getFirst().getFirst();
+      socket_design = socketDesigns.get(designId).getSecond();
       socket_netlist = socket_design.getNetlist();
 
       copyPhysicalCells(socket_design, shell_design, shell_netlist,
                         socketId, relocCROffsetX, relocCROffsetY,
                         socketAXINMUs, socketAXINSUs,
                         socketAXISNMUs, socketAXISNSUs,
-                        toRemoveSiteWireMap, designId);
+                        toRemoveSiteWireMap, implId);
 
     }
 
@@ -1072,15 +1075,17 @@ public class SpadesFlow {
       int relocCROffsetX = entry0.getValue().getSecond().getFirst();
       int relocCROffsetY = entry0.getValue().getSecond().getSecond();
 
-      socket_design = socketDesigns.get(designId);
+      int implId = socketDesigns.get(designId).getFirst().getFirst();
+      String flowName = socketDesigns.get(designId).getFirst().getSecond();
+      socket_design = socketDesigns.get(designId).getSecond();
       socket_netlist = socket_design.getNetlist();
 
-      if (designId < 10) {
-        if (SeparateCCCLFlow) {
-          if (designId == 3) {
+      if (implId < 10) {
+        if (flowName.equals("separateCCCL")) {
+          if (implId == 3) {
             socket_design.getNet("socket_cc_inst/lut1_primitive_0/inst/O").removePIP(dev.getPIP("CLE_E_CORE_X74Y4/CLE_E_CORE.CLE_SLICEL_TOP_0_HQ2_PIN->>CLE_SLICEL_TOP_0_HQ2"));
             socket_design.getNet("socket_cc_inst/lut1_primitive_0/inst/O").removePIP(dev.getPIP("INT_X74Y4/INT.LOGIC_OUTS_W23->>OUT_NN7_BEG3"));
-          } else if (designId == 4) {
+          } else if (implId == 4) {
             socket_design.getNet("socket_cc_inst/lut1_primitive_0/inst/O").removePIP(dev.getPIP("CLE_E_CORE_X66Y331/CLE_E_CORE.CLE_SLICEL_TOP_0_HQ_PIN->>CLE_SLICEL_TOP_0_HQ"));
             socket_design.getNet("socket_cc_inst/lut1_primitive_0/inst/O").removePIP(dev.getPIP("INT_X66Y331/INT.LOGIC_OUTS_W22->>OUT_SS7_BEG3"));
           } else {
@@ -1088,10 +1093,10 @@ public class SpadesFlow {
             socket_design.getNet("socket_cc_inst/lut1_primitive_0/inst/O").removePIP(dev.getPIP("INT_X74Y100/INT.LOGIC_OUTS_W23->>OUT_NN7_BEG3"));
           }
         } else {
-          if (designId == 3) {
+          if (implId == 3) {
             socket_design.getNet("lut1_primitive_0/inst/O").removePIP(dev.getPIP("CLE_E_CORE_X74Y4/CLE_E_CORE.CLE_SLICEL_TOP_0_HQ2_PIN->>CLE_SLICEL_TOP_0_HQ2"));
             socket_design.getNet("lut1_primitive_0/inst/O").removePIP(dev.getPIP("INT_X74Y4/INT.LOGIC_OUTS_W23->>OUT_NN7_BEG3"));
-          } else if (designId == 4) {
+          } else if (implId == 4) {
             socket_design.getNet("lut1_primitive_0/inst/O").removePIP(dev.getPIP("CLE_E_CORE_X66Y331/CLE_E_CORE.CLE_SLICEL_TOP_0_HQ_PIN->>CLE_SLICEL_TOP_0_HQ"));
             socket_design.getNet("lut1_primitive_0/inst/O").removePIP(dev.getPIP("INT_X66Y331/INT.LOGIC_OUTS_W22->>OUT_SS7_BEG3"));
           } else {
@@ -1104,7 +1109,7 @@ public class SpadesFlow {
                        mbufgceClk1Nets[socketId],
                        mbufgceClk2Nets[socketId], prefixName + socketId + "/",
                        relocCROffsetX,
-                       relocCROffsetY, designId);
+                       relocCROffsetY, implId);
     }
 
     HashSet<PIP> allRoutedPIPs = new HashSet<>();
@@ -1187,16 +1192,18 @@ public class SpadesFlow {
       int relocCROffsetX = entry0.getValue().getSecond().getFirst();
       int relocCROffsetY = entry0.getValue().getSecond().getSecond();
 
-      socket_design = socketDesigns.get(designId);
+      int implId = socketDesigns.get(designId).getFirst().getFirst();
+      String flowName = socketDesigns.get(designId).getFirst().getSecond();
+      socket_design = socketDesigns.get(designId).getSecond();
       socket_netlist = socket_design.getNetlist();
 
       //String socketName = "top_i/ulp/socket" + socketId;
       String socketName = shellPrefix + "socket" + socketId;
       EDIFCell socketEC = shell_netlist.getCell("socket" + socketId);
 
-      if (designId < 10) {
+      if (implId < 10) {
         EDIFCellInst lut1ECI;
-        if (SeparateCCCLFlow)
+        if (flowName.equals("separateCCCL"))
           lut1ECI = socketEC.getCellInst("socket_cc_inst").getCellType().removeCellInst("lut1_primitive_0");
         else
           lut1ECI = socketEC.removeCellInst("lut1_primitive_0");
@@ -1205,21 +1212,21 @@ public class SpadesFlow {
           for (EDIFPortInst epi1 : epi.getNet().getPortInsts()) {
             epi1.getParentCell().removePort(epi1.getPort());
           }
-          if (SeparateCCCLFlow)
+          if (flowName.equals("separateCCCL"))
             socketEC.getCellInst("socket_cc_inst").getCellType().removeNet(epi.getNet());
           else
             socketEC.removeNet(epi.getNet());
         }
 
         Cell lut1Cell;
-        if (SeparateCCCLFlow)
+        if (flowName.equals("separateCCCL"))
           lut1Cell = shell_design.getCell(socketName + "/socket_cc_inst/lut1_primitive_0/inst/lut1_inst");
         else
           lut1Cell = shell_design.getCell(socketName + "/lut1_primitive_0/inst/lut1_inst");
 
         //Net lut1INet = shell_design.getNet(socketName + "/lut1_in");
         Net lut1ONet;
-        if (SeparateCCCLFlow)
+        if (flowName.equals("separateCCCL"))
           lut1ONet = shell_design.getNet(socketName + "/socket_cc_inst/lut1_primitive_0/inst/O");
         else
           lut1ONet = shell_design.getNet(socketName + "/lut1_primitive_0/inst/O");
@@ -1235,25 +1242,25 @@ public class SpadesFlow {
         shell_design.removeCell(lut1Cell);
 
         // Reset Routing (mbufgce_clr_n)
-        //Tile relocTile0 = getRelocTile(dev.getTile("INT_X52Y98"), relocCROffsetX, relocCROffsetY, designId);
-        //Tile relocTile1 = getRelocTile(dev.getTile("INT_X52Y100"), relocCROffsetX, relocCROffsetY, designId);
-        Tile relocTile0 = getRelocTile(dev.getTile("INT_X74Y98"), relocCROffsetX, relocCROffsetY, designId);
-        Tile relocTile1 = getRelocTile(dev.getTile("INT_X74Y100"), relocCROffsetX, relocCROffsetY, designId);
+        //Tile relocTile0 = getRelocTile(dev.getTile("INT_X52Y98"), relocCROffsetX, relocCROffsetY, implId);
+        //Tile relocTile1 = getRelocTile(dev.getTile("INT_X52Y100"), relocCROffsetX, relocCROffsetY, implId);
+        Tile relocTile0 = getRelocTile(dev.getTile("INT_X74Y98"), relocCROffsetX, relocCROffsetY, implId);
+        Tile relocTile1 = getRelocTile(dev.getTile("INT_X74Y100"), relocCROffsetX, relocCROffsetY, implId);
 
-        if (designId == 3) {
-          //relocTile0 = getRelocTile(dev.getTile("INT_X52Y2"), relocCROffsetX, relocCROffsetY, designId);
-          //relocTile1 = getRelocTile(dev.getTile("INT_X52Y4"), relocCROffsetX, relocCROffsetY, designId);
-          relocTile0 = getRelocTile(dev.getTile("INT_X74Y2"), relocCROffsetX, relocCROffsetY, designId);
-          relocTile1 = getRelocTile(dev.getTile("INT_X74Y4"), relocCROffsetX, relocCROffsetY, designId);
+        if (implId == 3) {
+          //relocTile0 = getRelocTile(dev.getTile("INT_X52Y2"), relocCROffsetX, relocCROffsetY, implId);
+          //relocTile1 = getRelocTile(dev.getTile("INT_X52Y4"), relocCROffsetX, relocCROffsetY, implId);
+          relocTile0 = getRelocTile(dev.getTile("INT_X74Y2"), relocCROffsetX, relocCROffsetY, implId);
+          relocTile1 = getRelocTile(dev.getTile("INT_X74Y4"), relocCROffsetX, relocCROffsetY, implId);
         }
-        if (designId == 4) {
-          relocTile0 = getRelocTile(dev.getTile("INT_X66Y333"), relocCROffsetX, relocCROffsetY, designId);
-          relocTile1 = getRelocTile(dev.getTile("INT_X66Y331"), relocCROffsetX, relocCROffsetY, designId);
+        if (implId == 4) {
+          relocTile0 = getRelocTile(dev.getTile("INT_X66Y333"), relocCROffsetX, relocCROffsetY, implId);
+          relocTile1 = getRelocTile(dev.getTile("INT_X66Y331"), relocCROffsetX, relocCROffsetY, implId);
         }
 
         //System.out.println("RelocTile: " + relocTile0 + " " + relocTile1);
         Node mbufgceClrnSnkNode = dev.getNode(relocTile0 + "/OUT_NN2_E_BEG3");
-        if (designId == 4)
+        if (implId == 4)
           mbufgceClrnSnkNode = dev.getNode(relocTile0 + "/OUT_NN7_BEG3");
 
         int startY = mbufgceClrnSrcPIPs[socketId].getTile().getTileYCoordinate();
@@ -1281,7 +1288,7 @@ public class SpadesFlow {
           allRoutedWires.add(pip.getEndWire());
         }
 
-        if (designId == 4)
+        if (implId == 4)
           mbufgceClrnNets[socketId].addPIP(dev.getPIP(relocTile1 + "/INT.IN_SS7_END3->>OUT_SS7_BEG3"));
         else
           mbufgceClrnNets[socketId].addPIP(dev.getPIP(relocTile1 + "/INT.IN_NN2_E_END3->>OUT_NN7_BEG3"));
@@ -1298,16 +1305,16 @@ public class SpadesFlow {
       routedPIPs.addAll(mbufgceClk1Nets[socketId].getPIPs());
       ArrayList<PIP> routePath = new ArrayList<>();
 
-      Tile relocClkTile = getRelocTile(dev.getTile("CLK_REBUF_VERT_VNOC_BAA_TILE_X69Y183"), relocCROffsetX, relocCROffsetY, designId);
-      if (designId == 4)
-        relocClkTile = getRelocTile(dev.getTile("CLK_REBUF_VERT_VNOC_TOP_COA_TILE_X69Y327"), relocCROffsetX, relocCROffsetY, designId);
+      Tile relocClkTile = getRelocTile(dev.getTile("CLK_REBUF_VERT_VNOC_BAA_TILE_X69Y183"), relocCROffsetX, relocCROffsetY, implId);
+      if (implId == 4)
+        relocClkTile = getRelocTile(dev.getTile("CLK_REBUF_VERT_VNOC_TOP_COA_TILE_X69Y327"), relocCROffsetX, relocCROffsetY, implId);
 
       //Node snkNode = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VDISTR" + clockTrack);
       //CLK_REBUF_VERT_VNOC_BAA_TILE_X69Y183/IF_WRAP_CLK_V_BOT_CLK_VDISTR_LEV2_11
       Node snkNode = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VDISTR_LEV2_" + clockTrack);
       // CLK_REBUF_VERT_VNOC_BAA_TILE_X69Y183/IF_WRAP_CLK_V_BOT_CLK_VDISTR11
       //Node snkNode = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VDISTR" + clockTrack);
-      if (designId == 3)
+      if (implId == 3)
         snkNode = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VROUTE" + clockTrack);
 
       HashMap<PIP, PIP> clkPIPMap = new HashMap<>();
@@ -1393,7 +1400,7 @@ public class SpadesFlow {
           //System.out.println("[1] to remove PIP " + pip);
           toRemovePIPs.add(pip);
         }
-        if (designId == 2 || designId == 3) {
+        if (implId == 2 || implId == 3) {
           if (pip.toString().contains("IF_WRAP_CLK_V_TOP_CLK_VDISTR") && pip.toString().contains("CLK_CMT_MUX_4TO1")) {
             System.out.println("[2] to remove PIP " + pip);
             toRemovePIPs.add(pip);
@@ -1403,7 +1410,7 @@ public class SpadesFlow {
             toRemovePIPs.add(pip);
           }
         }
-        if (designId == 3) {
+        if (implId == 3) {
           if (pip.toString().contains("IF_WRAP_CLK_V_BOT_CLK_VDISTR") && pip.toString().contains("CLK_CMT_MUX_3TO1")) {
             //System.out.println("[3] to remove PIP " + pip);
             toRemovePIPs.add(pip);
@@ -1454,7 +1461,7 @@ public class SpadesFlow {
           break;
         }
       }
-      if (designId == 2 || designId == 3) {
+      if (implId == 2 || implId == 3) {
         // for case [w=1, h=2]
         for (PIP pip : snkNode2.getAllUphillPIPs()) {
           if (pip.toString().contains("CLK_CMT_MUX_4TO1") && pip.getTile().equals(relocClkTile)) {
@@ -1474,8 +1481,8 @@ public class SpadesFlow {
         }
       }
 
-      if (designId == 3) {
-        relocClkTile = getRelocTile(dev.getTile("CLK_REBUF_VERT_VNOC_CBA_TILE_X69Y87"), relocCROffsetX, relocCROffsetY, designId);
+      if (implId == 3) {
+        relocClkTile = getRelocTile(dev.getTile("CLK_REBUF_VERT_VNOC_CBA_TILE_X69Y87"), relocCROffsetX, relocCROffsetY, implId);
 
         Node snkNode3 = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VDISTR" + clockTrack);
         Node snkNode4 = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VDISTR_LEV1_" + clockTrack);
