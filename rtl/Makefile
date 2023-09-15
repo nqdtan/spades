@@ -4,7 +4,7 @@ VERILOG_SRCS += riscv/*.v
 VERILOG_SRCS += testbenches/*.v
 APP_DIR := ../benchmarks/hls_kernel
 VERILOG_SRCS += $(APP_DIR)/$(sw)/proj/solution_cl_$(kernel)/syn/verilog/*.v
-VERILOG_SRCS += ../socket_cc_flow/ff_bridge/ff_bridge_bb.v
+VERILOG_SRCS += ../socket_cc_flow/ff_bridge/ff_bridge_sim.v
 
 SW_DIR := ../controller_software/$(sw)
 SW_SRCS  := $(wildcard $(SW_DIR)/*.h)

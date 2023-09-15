@@ -1,4 +1,6 @@
-# *Spatially Distributed Socket Engines (SPADES): A Fast, Composable, and Modular Hardware Design Method for Versal Programmable Logic*
+# Spatially Distributed Socket Engines (SPADES)
+
+**A Fast, Composable, and Modular Hardware Design Method for Versal Programmable Logic**
 
 Documentation in-progress
 
@@ -75,7 +77,7 @@ with the new xsabin.
 The compatible shell checkpoint (used in this project) is available in the SPADES assets.
 `spades_assets/ulp_design/utils/xilinx_vck5000_gen4x8_qdma_2_202220_1_bb_locked.dcp`
 
-Follow the instructions in [platform_xsabin_gen/README.md](https://github.com/nqdtan/spades/tree/main/platform_xsabin_gen)
+Follow the instructions in [platform_xsabin_gen/README.md](https://github.com/nqdtan/spades/tree/master/platform_xsabin_gen)
 to obtain a xsabin file implemented with the compatible shell checkpoint.
 
 ## Example of how to run benchmark matmul (step-by-step)
