@@ -954,10 +954,10 @@ public class SpadesFlow {
             jsobj.put("To", ddrmcName);
             jsobj.put("Port", "PORT" + socketNSUName);
             jsobj.put("CommType", "MM_ReadWrite");
-            jsobj.put("ReadBW", 800);
+            jsobj.put("ReadBW", 400);
             jsobj.put("ReadLatency", 300);
             jsobj.put("ReadAvgBurst", 4);
-            jsobj.put("WriteBW", 800);
+            jsobj.put("WriteBW", 400);
             jsobj.put("WriteLatency", 300);
             jsobj.put("WriteAvgBurst", 4);
             NOCConnection nocConn = new NOCConnection(jsobj, nd);

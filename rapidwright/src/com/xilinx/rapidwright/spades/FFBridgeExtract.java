@@ -210,7 +210,6 @@ public class FFBridgeExtract {
         if (ehpi == null)
           continue;
 
-        //System.out.println("--- " + ehpi + " " + ehpi.getPhysicalCell(design));
         if (ehpi.getPhysicalCell(design).getName().contains("cell_a")) {
           ValidNet = true;
           cellId = ehpi.getPhysicalCell(design).getName().substring("design_1_i/ff_bridge_0/inst/cell_a".length());

@@ -489,7 +489,8 @@ module controller #(
   end
 `endif
 
-  localparam FIFO1_LOGDEPTH = FIFO_LOGDEPTH + 1;
+//  localparam FIFO1_LOGDEPTH = FIFO_LOGDEPTH + 1;
+  localparam FIFO1_LOGDEPTH = FIFO_LOGDEPTH;
 
   wire [31:0] ff_lsu0_ram_start_idx_enq_data, ff_lsu0_ram_start_idx_deq_data;
   wire ff_lsu0_ram_start_idx_enq_valid, ff_lsu0_ram_start_idx_enq_ready;
@@ -931,9 +932,11 @@ module controller #(
     if (ff_lsu0_ram_start_idx_enq_ready === 1'b0) begin
       $display("[%t] [%m] CRITICAL WARNING lsu0 config queue full!", $time);
     end
+`ifndef SOCKET_S
     if (ff_lsu1_ram_start_idx_enq_ready === 1'b0) begin
       $display("[%t] [%m] CRITICAL WARNING lsu1 config queue full!", $time);
     end
+`endif
   end
 
   assign ff_lsu0_ram_start_idx_enq_data      = lsu0_ram_start_idx_tmp;

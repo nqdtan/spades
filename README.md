@@ -11,7 +11,7 @@ Documentation in-progress
 - **Vitis/Vivado**: 2022.2
 - **XRT**: 2.14.384 (2022.2)
 - **Linux kernel**: 5.4.0-42-generic
-- **RapidWright**: 2023.1.2
+- **RapidWright**: 2022.2.3
 - **Development OS**: Ubuntu 20.04
 - **Additional software**: RISC-V GCC toolchain (prebuilt binaries from SiFive), iverilog
 

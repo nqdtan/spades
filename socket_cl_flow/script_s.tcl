@@ -16,8 +16,8 @@ add_files -norecurse ${src_dir}/ram_group_uram.v
 add_files -norecurse ${src_dir}/regmem_lib.v
 add_files -norecurse ${src_dir}/pipe_block.v
 
-add_files -norecurse ../socket_cc_flow/ff_bridge_s/ff_bridge_s1_extracted_fixed_bb.v
-import_files -norecurse ../socket_cc_flow/ff_bridge_s/ff_bridge_s1_extracted_fixed.dcp
+add_files -norecurse ../socket_cc_flow/ff_bridge_s/ff_bridge_s_bb_with_stub_net.v
+import_files -norecurse ../socket_cc_flow/ff_bridge_s/ff_bridge_s_extracted_fixed.dcp
 
 update_compile_order -fileset sources_1
 
@@ -34,7 +34,6 @@ update_compile_order -fileset sources_1
 
 set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
 set_property -name {STEPS.SYNTH_DESIGN.ARGS.MORE OPTIONS} -value {-mode out_of_context -verilog_define FF_BRIDGE_WITH_STUB_NET=1} -objects [get_runs synth_1]
-#set_property -name {STEPS.SYNTH_DESIGN.ARGS.MORE OPTIONS} -value {-mode out_of_context} -objects [get_runs synth_1]
 
 #set_param logicopt.enableBUFGinsertCLK 0
 set_property -name STEPS.OPT_DESIGN.TCL.PRE -value [get_files -of_object [get_filesets utils_1] pre_opt.tcl] -objects [get_runs impl_1]
