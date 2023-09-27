@@ -193,7 +193,8 @@ module lsu_core #(
 
   localparam STATE_IDLE = 0;
   localparam STATE_RUN  = 1;
-  localparam STATE_DONE = 2;
+  localparam STATE_SS_OUT_WAIT  = 2;
+  localparam STATE_DONE = 3;
 
   wire [1:0] state_value;
   reg  [1:0] state_next;
@@ -311,7 +312,14 @@ module lsu_core #(
       end
 
       STATE_RUN: begin
-        if (cond_xseg_count & cond_xlen & (ss_in_fire | parallel_in | ss_out_ok))
+        if (cond_xseg_count & cond_xlen & (ss_in_fire | parallel_in))
+          state_next = STATE_DONE;
+        else if (cond_xseg_count & cond_xlen & ss_out_ok)
+          state_next = STATE_SS_OUT_WAIT;
+      end
+
+      STATE_SS_OUT_WAIT: begin
+        if (tmp_out_deq_valid == 1'b0)
           state_next = STATE_DONE;
       end
 

@@ -229,6 +229,7 @@ module socket_top_tb();
     .m0_bvalid(m0_0_bvalid),
     .m0_bready(m0_0_bready),
 
+`ifndef SOCKET_S
     // AXI Master
     .m1_arid(m1_0_arid),
     .m1_araddr(m1_0_araddr),
@@ -264,6 +265,7 @@ module socket_top_tb();
     .m1_bresp(m1_0_bresp),
     .m1_bvalid(m1_0_bvalid),
     .m1_bready(m1_0_bready),
+`endif
 
     // AXI Slave
     .s0_arid(s0_arid),
