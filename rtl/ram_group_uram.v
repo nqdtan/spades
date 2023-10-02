@@ -1,5 +1,4 @@
 `include "socket_config.vh"
-`define DEBUG_READ 1
 module ram_group_uram #(
   parameter AWIDTH = 12,
   parameter DWIDTH = 64
@@ -375,7 +374,7 @@ module ram_group_uram #(
     .en1(ram_3_ce1_pipe),
     .clk(clk)
   );
-`ifdef DEBUG_READ
+`ifdef DEBUG
   reg [AWIDTH-1:0] ram_0_addr0_pipe1;
   reg [AWIDTH-1:0] ram_0_addr1_pipe1;
   reg ram_0_ren0;

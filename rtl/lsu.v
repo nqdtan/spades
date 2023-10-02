@@ -193,7 +193,7 @@ module lsu_core #(
 
   localparam STATE_IDLE = 0;
   localparam STATE_RUN  = 1;
-  localparam STATE_SS_OUT_WAIT  = 2;
+  localparam STATE_SS_OUT_WAIT = 2;
   localparam STATE_DONE = 3;
 
   wire [1:0] state_value;
@@ -227,11 +227,12 @@ module lsu_core #(
   wire [31:0] ram_block_factor_offset = dw_mode ? 4 : 2;
   wire [31:0] ram_stride2 = dw_mode ? 2 * ram_stride : ram_stride;
 
+  wire b1c8 = (ram_block_factor == 1) & (ram_cyclic_factor == 8);
   wire cond_xlen;// = xlen_cnt_value == len - 1;
   REGISTER_R_CE #(.N(1)) cond_xlen_reg (
     .clk(clk),
-    .ce((xlen_cnt_value == len - cyclic_offset3 & xlen_cnt_ce) | (len == 8 & parallel_mode)),
-    .rst(((xlen_cnt_rst & ~(len == 8 & parallel_mode))) | st_idle),
+    .ce((xlen_cnt_value == len - cyclic_offset3 & xlen_cnt_ce) | (len == 8 & parallel_mode & ~b1c8)),
+    .rst(((xlen_cnt_rst & ~(len == 8 & parallel_mode & ~b1c8))) | st_idle),
     .d(1'b1),
     .q(cond_xlen)
   );
@@ -267,6 +268,15 @@ module lsu_core #(
   );
 
   wire ss_out_ok;
+
+  wire tmp_out_deq_fire_pipe0;
+  REGISTER_R_CE #(.N(1)) tmp_out_deq_fire_pipe0_reg (
+    .clk(clk),
+    .rst((tmp_out_deq_valid == 1'b0) & (state_value == STATE_SS_OUT_WAIT)),
+    .ce(tmp_out_deq_fire),
+    .d(1'b1),
+    .q(tmp_out_deq_fire_pipe0)
+  );
 
   wire broadcast_mode;
   REGISTER_R_CE #(.N(1)) broadcast_mode_reg (
@@ -319,7 +329,7 @@ module lsu_core #(
       end
 
       STATE_SS_OUT_WAIT: begin
-        if (tmp_out_deq_valid == 1'b0)
+        if (tmp_out_deq_fire_pipe0 & (tmp_out_deq_valid == 1'b0))
           state_next = STATE_DONE;
       end
 
@@ -639,16 +649,16 @@ module lsu_core #(
   // TAN
   always @(posedge clk) begin
     if (ID === 0) begin
-    $display("[%t] [%m] state=%h, start=%b, done=%b, ram_en=%b, ram_block_factor=%h, ram_cyclic_factor=%h, ram_cnt=%h, block_cnt=%h, cyclic_cnt=%h, cond_block_cnt=%b, cond_cyclic_cnt=%b, ram_rd_lat_cnt=%h, port0_addr=%h, port0_ce=%b, port0_q=%h, port1_addr=%h, port1_ce=%b, port1_q=%h, port2_addr=%h, port2_ce=%b, port2_q=%h, port3_addr=%h, port3_ce=%b, port3_q=%h, tmp_out_enq [%b %b %h], tmp_out_deq [%b %b %h], ss_out [%b %b %h], ss_out_ok=%b, cyclic_cnt_rst=%b, block_cnt_rst=%b,  parallel_in=%b, ram_en_init=%h, len=%h, seg_count=%h, dp_mode_base0=%b, dp_mode_base2=%b",
+    $display("[%t] [%m] state=%h, start=%b, done=%b, ram_en=%b, ram_block_factor=%h, ram_cyclic_factor=%h, ram_cnt=%h, block_cnt=%h, cyclic_cnt=%h, cond_block_cnt=%b, cond_cyclic_cnt=%b, ram_rd_lat_cnt=%h, port0_addr=%h, port0_ce=%b, port0_we=%b, port0_q=%h, port1_addr=%h, port1_ce=%b, port1_we=%b, port1_q=%h, port2_addr=%h, port2_ce=%b, port2_we=%b, port2_q=%h, port3_addr=%h, port3_ce=%b, port3_we=%b, port3_q=%h, tmp_out_enq [%b %b %h], tmp_out_deq [%b %b %h], ss_out [%b %b %h], ss_out_ok=%b, cyclic_cnt_rst=%b, block_cnt_rst=%b,  parallel_in=%b, ram_en_init=%h, len=%h, seg_count=%h, dp_mode_base0=%b, dp_mode_base2=%b, mode_read=%b, mode_write=%b, tmp_out_deq_fire_pipe0=%b, cond_xseg_count=%b, cond_xlen=%b",
       $time, state_value, lsu_start, lsu_done,
       ram_en,
       ram_block_factor, ram_cyclic_factor,
       ram_cnt_value, block_cnt_value, cyclic_cnt_value, cond_block_cnt, cond_cyclic_cnt,
       ram_rd_lat_cnt_value,
-      port0_addr, port0_ce, port0_q,
-      port1_addr, port1_ce, port1_q,
-      port2_addr, port2_ce, port2_q,
-      port3_addr, port3_ce, port3_q,
+      port0_addr, port0_ce, port0_we, port0_q,
+      port1_addr, port1_ce, port1_we, port1_q,
+      port2_addr, port2_ce, port2_we, port2_q,
+      port3_addr, port3_ce, port3_we, port3_q,
 
       tmp_out_enq_valid, tmp_out_enq_ready, tmp_out_enq_data,
       tmp_out_deq_valid, tmp_out_deq_ready, tmp_out_deq_data,
@@ -659,7 +669,9 @@ module lsu_core #(
       parallel_in,
       ram_en_init,
       len, seg_count,
-      dp_mode_base0, dp_mode_base2
+      dp_mode_base0, dp_mode_base2,
+      mode_read, mode_write, tmp_out_deq_fire_pipe0,
+      cond_xseg_count, cond_xlen
     );
     end
   end

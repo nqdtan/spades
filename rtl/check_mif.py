@@ -15,15 +15,13 @@ def main(argv):
   with open(argv[1], 'r') as f:
     lines2 = f.readlines()
 
-  verify_len = int(argv[2])
-
+  verify_len = min(int(argv[2]), len(lines2))
   num_mismatches = 0
   for i in range(int(verify_len / scale)):
-    #d1 = hex(int(lines1[i], base=16))
-    #d2 = hex(int(lines2[i], base=16))
     # Python string: MSB -> LSB
     for j in range(scale):
-      #print(lines1[i], lines1[i][j*16:(j+1)*16])
+      #print("result", lines1[i][j*16:(j+1)*16])
+      #print("gold  ", lines2[i * scale + scale - 1 - j])
       d1 = hex(int(lines1[i][j*16:(j+1)*16], base=16))
       d2 = hex(int(lines2[i * scale + scale - 1 - j], base=16))
       if d1 != d2:

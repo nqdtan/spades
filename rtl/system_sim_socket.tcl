@@ -27,7 +27,7 @@ update_ip_catalog
 
 add_files -norecurse [glob *.v *.vh *.mif]
 add_files -norecurse [glob riscv/*.v riscv/*.vh riscv/*.mif]
-add_files -norecurse [glob ../socket_cc_flow/ff_bridge/ff_bridge_bb.v]
+add_files -norecurse [glob ../socket_cc_flow/ff_bridge/ff_bridge_sim.v]
 add_files -norecurse [glob ../benchmarks/hls_kernel/${app}/proj/solution_cl_${app}/syn/verilog/*.v]
 
 check_syntax
