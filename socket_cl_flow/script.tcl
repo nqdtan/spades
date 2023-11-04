@@ -23,6 +23,10 @@ update_compile_order -fileset sources_1
 
 check_syntax
 
+set tclFiles [glob -nocomplain ../benchmarks/hls_kernel/${app}/proj/solution_cl_${app}/syn/verilog/*.tcl]
+foreach f $tclFiles {
+source $f }
+
 set_property top rg_cl_wrapper [current_fileset]
 
 add_files -fileset utils_1 -norecurse tcl_hooks/pre_opt.tcl

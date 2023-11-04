@@ -26,3 +26,4 @@ socket_cc_flow/project_*
 socket_cl_flow/project_*
 pdi_gen/project_*
 benchmarks/hls_kernel/*/proj
+checkpoints/hd_visual

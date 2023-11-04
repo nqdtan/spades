@@ -1,13 +1,13 @@
 #!/bin/bash
 
-wget https://github.com/Xilinx/RapidWright/releases/download/v2022.2.3-beta/rapidwright-2022.2.3-standalone-lin64.jar
-wget https://github.com/Xilinx/RapidWright/releases/download/v2022.2.3-beta/rapidwright-api-lib-2022.2.3-javadoc.jar
-wget https://github.com/Xilinx/RapidWright/releases/download/v2022.2.3-beta/gnl_timing_designs.zip
-wget https://github.com/Xilinx/RapidWright/releases/download/v2022.2.3-beta/rapidwright_data.zip
-wget https://github.com/Xilinx/RapidWright/releases/download/v2022.2.3-beta/rapidwright_jars.zip
-wget https://github.com/Xilinx/RapidWright/archive/refs/tags/v2022.2.3-beta.zip
+wget https://github.com/Xilinx/RapidWright/releases/download/v2023.1.4-beta/rapidwright-2023.1.4-standalone-lin64.jar
+wget https://github.com/Xilinx/RapidWright/releases/download/v2023.1.4-beta/rapidwright-api-lib-2023.1.4-javadoc.jar
+wget https://github.com/Xilinx/RapidWright/releases/download/v2023.1.4-beta/gnl_timing_designs.zip
+wget https://github.com/Xilinx/RapidWright/releases/download/v2023.1.4-beta/rapidwright_data.zip
+wget https://github.com/Xilinx/RapidWright/releases/download/v2023.1.4-beta/rapidwright_jars.zip
+wget https://github.com/Xilinx/RapidWright/archive/refs/tags/v2023.1.4-beta.zip
 
-unzip v2022.2.3-beta.zip  -d .
+unzip v2023.1.4-beta.zip  -d .
 unzip rapidwright_jars.zip -d .
 unzip rapidwright_data.zip -d .
 unzip gnl_timing_designs.zip -d .

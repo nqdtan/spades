@@ -32,6 +32,10 @@ add_files -norecurse [glob ../benchmarks/hls_kernel/${app}/proj/solution_cl_${ap
 
 check_syntax
 
+set tclFiles [glob -nocomplain ../benchmarks/hls_kernel/${app}/proj/solution_cl_${app}/syn/verilog/*.tcl]
+foreach f $tclFiles {
+source $f }
+
 create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wizard:1.0 clk_wizard_0
 set_property -dict [list CONFIG.USE_LOCKED {true} CONFIG.USE_RESET {true} CONFIG.CLKOUT_USED {true,false,false,false,false,false,false} CONFIG.CLKOUT_PORT {clk_out1,clk_out2,clk_out3,clk_out4,clk_out5,clk_out6,clk_out7} CONFIG.CLKOUT_REQUESTED_OUT_FREQUENCY {500,100.000,100.000,100.000,100.000,100.000,100.000} CONFIG.CLKOUT_REQUESTED_PHASE {0.000,0.000,0.000,0.000,0.000,0.000,0.000} CONFIG.CLKOUT_REQUESTED_DUTY_CYCLE {50.000,50.000,50.000,50.000,50.000,50.000,50.000} CONFIG.CLKOUT_DRIVES {MBUFGCE,BUFG,BUFG,BUFG,BUFG,BUFG,BUFG} CONFIG.CLKOUT_GROUPING {Auto,Auto,Auto,Auto,Auto,Auto,Auto} CONFIG.CLKOUT_DYN_PS {None,None,None,None,None,None,None} CONFIG.CLKOUT_MATCHED_ROUTING {false,false,false,false,false,false,false} CONFIG.CLKOUT1_DIVIDE {6.000000}] [get_bd_cells clk_wizard_0]
 
