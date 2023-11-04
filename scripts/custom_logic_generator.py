@@ -25,6 +25,16 @@ def main(argv):
     f = benchmark_config.setup_cholesky(lsu_rg_map, num_ports, num_lsus, ram_map, xml_files)
   elif argv[0] == "spmv":
     f = benchmark_config.setup_spmv(lsu_rg_map, num_ports, num_lsus, ram_map, xml_files)
+  elif argv[0] == "matmul_32b":
+    f = benchmark_config.setup_matmul_32b(lsu_rg_map, num_ports, num_lsus, ram_map, xml_files)
+  elif argv[0] == "matmul_32b_fp":
+    f = benchmark_config.setup_matmul_32b_fp(lsu_rg_map, num_ports, num_lsus, ram_map, xml_files)
+  elif argv[0] == "conv2d":
+    f = benchmark_config.setup_conv2d(lsu_rg_map, num_ports, num_lsus, ram_map, xml_files)
+  elif argv[0] == "conv3d":
+    f = benchmark_config.setup_conv3d(lsu_rg_map, num_ports, num_lsus, ram_map, xml_files)
+  elif argv[0] == "linear":
+    f = benchmark_config.setup_linear(lsu_rg_map, num_ports, num_lsus, ram_map, xml_files)
 
   num_ram_groups_bram,\
   num_ram_groups_lutram,\
@@ -207,7 +217,7 @@ def main(argv):
   code += "  wire cl_ap_done;\n"
   code += "  wire cl_ap_ready;\n"
 
-  code += " {0} custom_logic_inst (\n".format(task_name)
+  code += "  {0} custom_logic_inst (\n".format(task_name)
 
   for k, v in bram_ports.items():
     for port_name, pdir, bitwidth in v:

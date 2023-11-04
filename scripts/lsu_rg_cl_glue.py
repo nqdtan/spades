@@ -29,6 +29,16 @@ def main(argv):
     f = benchmark_config.cholesky_rg_config(lsu_rg_map, num_lsus)
   elif argv[0] == "spmv":
     f = benchmark_config.spmv_rg_config(lsu_rg_map, num_lsus)
+  elif argv[0] == "matmul_32b":
+    f = benchmark_config.matmul_32b_rg_config(lsu_rg_map, num_lsus)
+  elif argv[0] == "matmul_32b_fp":
+    f = benchmark_config.matmul_32b_fp_rg_config(lsu_rg_map, num_lsus)
+  elif argv[0] == "conv2d":
+    f = benchmark_config.conv2d_rg_config(lsu_rg_map, num_lsus)
+  elif argv[0] == "conv3d":
+    f = benchmark_config.conv3d_rg_config(lsu_rg_map, num_lsus)
+  elif argv[0] == "linear":
+    f = benchmark_config.linear_rg_config(lsu_rg_map, num_lsus)
 
   num_ram_groups_bram,\
   num_ram_groups_lutram,\
