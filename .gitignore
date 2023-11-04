@@ -14,11 +14,13 @@
 *.xclbin
 *.exe
 *.jar
+control_top.h
 .Xil
 __pycache__
 scripts/*.v
 rtl/*.mif*
 rtl/project_*
+controller_software/*/*.mif
 ulp_design/project_*
 ulp_design/kernel_pack_*
 standalone_flow/project_*

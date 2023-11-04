@@ -1,0 +1,42 @@
+#define IFM0_DIM 13
+#define WT0_DIM 3
+#define PAD 1
+#define OFM0_DIM (IFM0_DIM + 2 * PAD - WT0_DIM + 1)
+#define IFM0_CHN 32//12//32
+#define OFM0_CHN 16
+#define OFM0_CNT 8
+#define NUM_CONV2D_0 12
+
+#define IFM1_DIM 13
+#define WT1_DIM 3
+#define PAD 1
+#define OFM1_DIM (IFM1_DIM + 2 * PAD - WT1_DIM + 1)
+#define IFM1_CHN 16
+#define OFM1_CHN 16//4//8
+#define OFM1_CNT 8
+#define NUM_CONV2D_1 8
+
+#define IFM0_CHN_SCALE (IFM0_CHN / NUM_CONV2D_0)
+#define WT0_SIZE_CEIL  (((WT0_DIM * WT0_DIM + 7) / 8) * 8)
+#define IFM0_SIZE_CEIL (((IFM0_DIM * IFM0_DIM + 7) / 8) * 8)
+#define OFM0_SIZE_CEIL (((OFM0_DIM * OFM0_DIM + 7) / 8) * 8)
+
+#define WT0_LEN  (OFM0_CHN * IFM0_CHN * WT0_SIZE_CEIL)
+#define IFM0_LEN (IFM0_CHN * IFM0_SIZE_CEIL)
+#define OFM0_LEN (OFM0_CHN * OFM0_SIZE_CEIL)
+
+#define IFM1_CHN_SCALE (IFM1_CHN / NUM_CONV2D_1)
+#define WT1_SIZE_CEIL  (((WT1_DIM * WT1_DIM + 7) / 8) * 8)
+#define IFM1_SIZE_CEIL (((IFM1_DIM * IFM1_DIM + 7) / 8) * 8)
+#define OFM1_SIZE_CEIL (((OFM1_DIM * OFM1_DIM + 7) / 8) * 8)
+
+#define WT1_LEN  (OFM1_CHN * IFM1_CHN * WT1_SIZE_CEIL)
+#define IFM1_LEN (IFM1_CHN * IFM1_SIZE_CEIL)
+#define OFM1_LEN (OFM1_CHN * OFM1_SIZE_CEIL)
+
+#define WT0_OFFSET  (0)
+#define IFM0_OFFSET (WT0_OFFSET + WT0_LEN)
+#define OFM0_OFFSET (WT0_OFFSET + WT0_LEN + IFM0_LEN)
+#define WT1_OFFSET  (WT0_OFFSET + WT0_LEN + IFM0_LEN + OFM0_LEN)
+#define IFM1_OFFSET (OFM0_OFFSET)
+#define OFM1_OFFSET (WT0_OFFSET + WT0_LEN + IFM0_LEN + OFM0_LEN + WT1_LEN)
