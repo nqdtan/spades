@@ -426,10 +426,19 @@ module s_axi_adapter #(
   wire st_w_resp     = (state_value == STATE_W_RESP);
   wire st_r_data     = (state_value == STATE_R_DATA);
 
+  wire ss_done_pipe0;
+  REGISTER_R_CE #(.N(1), .INIT(0)) ss_done_pipe0_reg (
+    .clk(clk),
+    .rst((ss_done_pipe0 & st_idle) | ss_start),
+    .ce(ss_done),
+    .d(1'b1),
+    .q(ss_done_pipe0)
+  );
+
   wire ss_running;
   REGISTER_R_CE #(.N(1), .INIT(0)) ss_running_reg (
     .clk(clk),
-    .rst(ss_running & ss_done),
+    .rst(ss_running & ss_done_pipe0 & st_idle),
     .ce(ss_start),
     .d(1'b1),
     .q(ss_running)
@@ -566,7 +575,7 @@ module s_axi_adapter #(
   assign s_bvalid = st_w_resp | (socket_reset_pipe & s_wlast_pipe);
 
   assign s_rvalid    = st_r_data & (~ss_running | (ss_running & ss_in_valid));
-  assign ss_in_ready = s_rready;
+  assign ss_in_ready = st_r_data & ss_running & s_rready;
 
   assign s_bresp = `RESP_OKAY;
   assign s_rresp = `RESP_OKAY;

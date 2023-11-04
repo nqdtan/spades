@@ -227,7 +227,7 @@ module lsu_core #(
   wire [31:0] ram_block_factor_offset = dw_mode ? 4 : 2;
   wire [31:0] ram_stride2 = dw_mode ? 2 * ram_stride : ram_stride;
 
-  wire b1c8 = (ram_block_factor == 1) & (ram_cyclic_factor == 8);
+  wire b1c8 = (ram_block_factor == 1) & ((ram_cyclic_factor & 'b11) == 0);
   wire cond_xlen;// = xlen_cnt_value == len - 1;
   REGISTER_R_CE #(.N(1)) cond_xlen_reg (
     .clk(clk),
@@ -649,7 +649,7 @@ module lsu_core #(
   // TAN
   always @(posedge clk) begin
     if (ID === 0) begin
-    $display("[%t] [%m] state=%h, start=%b, done=%b, ram_en=%b, ram_block_factor=%h, ram_cyclic_factor=%h, ram_cnt=%h, block_cnt=%h, cyclic_cnt=%h, cond_block_cnt=%b, cond_cyclic_cnt=%b, ram_rd_lat_cnt=%h, port0_addr=%h, port0_ce=%b, port0_we=%b, port0_q=%h, port1_addr=%h, port1_ce=%b, port1_we=%b, port1_q=%h, port2_addr=%h, port2_ce=%b, port2_we=%b, port2_q=%h, port3_addr=%h, port3_ce=%b, port3_we=%b, port3_q=%h, tmp_out_enq [%b %b %h], tmp_out_deq [%b %b %h], ss_out [%b %b %h], ss_out_ok=%b, cyclic_cnt_rst=%b, block_cnt_rst=%b,  parallel_in=%b, ram_en_init=%h, len=%h, seg_count=%h, dp_mode_base0=%b, dp_mode_base2=%b, mode_read=%b, mode_write=%b, tmp_out_deq_fire_pipe0=%b, cond_xseg_count=%b, cond_xlen=%b",
+    $display("[%t] [%m] state=%h, start=%b, done=%b, ram_en=%b, ram_block_factor=%h, ram_cyclic_factor=%h, ram_cnt=%h, block_cnt=%h, cyclic_cnt=%h, cond_block_cnt=%b, cond_cyclic_cnt=%b, ram_rd_lat_cnt=%h, port0_addr=%h, port0_ce=%b, port0_we=%b, port0_q=%h, port1_addr=%h, port1_ce=%b, port1_we=%b, port1_q=%h, port2_addr=%h, port2_ce=%b, port2_we=%b, port2_q=%h, port3_addr=%h, port3_ce=%b, port3_we=%b, port3_q=%h, tmp_out_enq [%b %b %h], tmp_out_deq [%b %b %h], ss_out [%b %b %h], ss_out_ok=%b, cyclic_cnt_rst=%b, block_cnt_rst=%b,  parallel_in=%b, ram_en_init=%h, len=%h, seg_count=%h, dp_mode_base0=%b, dp_mode_base2=%b, mode_read=%b, mode_write=%b, tmp_out_deq_fire_pipe0=%b, cond_xseg_count=%b, cond_xlen=%b, xseg_count_val=%h, xlen_val=%h",
       $time, state_value, lsu_start, lsu_done,
       ram_en,
       ram_block_factor, ram_cyclic_factor,
@@ -671,7 +671,8 @@ module lsu_core #(
       len, seg_count,
       dp_mode_base0, dp_mode_base2,
       mode_read, mode_write, tmp_out_deq_fire_pipe0,
-      cond_xseg_count, cond_xlen
+      cond_xseg_count, cond_xlen,
+      xseg_count_value, xlen_cnt_value
     );
     end
   end

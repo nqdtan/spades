@@ -183,7 +183,7 @@ module m_axi_write #(
   wire st_dw_idle = (state_dw_value == STATE_DW_IDLE);
   wire st_dw_run  = (state_dw_value == STATE_DW_RUN);
 
-  localparam FIFO_LOGDEPTH = 2;//3;
+  localparam FIFO_LOGDEPTH = 3;
 
   wire [AXI_AWIDTH-1:0] ff_addr_enq_data, ff_addr_deq_data;
   wire ff_addr_enq_valid, ff_addr_enq_ready;

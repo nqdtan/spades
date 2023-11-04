@@ -151,7 +151,7 @@ module socket_top_tb();
   wire s_axi_control_bvalid;
   reg  s_axi_control_bready;
 
-  localparam VERIFY_LEN = 131848;
+  localparam VERIFY_LEN = 16576;
 
   reg [2047:0] CONTROL_FILE;
   reg [2047:0] VERIFY_FILE;
@@ -837,7 +837,8 @@ module socket_top_tb();
 
     axilite_write(ADDR_SOCKET_OFFSET_HI, `SOCKET_BASE(i) >> 32);
     axilite_write(ADDR_SOCKET_OFFSET_LO, `SOCKET_BASE(i) + ((EXT_MEM_OFFSET_HI + (1<<`SOCKET_MMIO_REG_SPACE)) << LOG2_NUM_BYTES));
-    axilite_write(ADDR_SOCKET_WDATA, 32'h000000c0);
+    //axilite_write(ADDR_SOCKET_WDATA, 32'h000000c0);
+    axilite_write(ADDR_SOCKET_WDATA, 0);
     axilite_write(ADDR_CSR, 32'd1);
     axilite_check_wr_idle();
 
