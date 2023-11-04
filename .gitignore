@@ -1,4 +1,5 @@
-*.log
+*log*
+*.bak
 *.jou
 *.zip
 *.swp
@@ -8,12 +9,20 @@
 *.dump
 *.elf
 *.out
+*.edn
+*.pdi
+*.xclbin
+*.exe
+*.jar
 .Xil
 __pycache__
+scripts/*.v
 rtl/*.mif*
+rtl/project_*
 ulp_design/project_*
 ulp_design/kernel_pack_*
 standalone_flow/project_*
 socket_cc_flow/project_*
 socket_cl_flow/project_*
+pdi_gen/project_*
 benchmarks/hls_kernel/*/proj
