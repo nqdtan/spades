@@ -3,13 +3,18 @@ create_clock -period 2.0 -name aclk -add [get_ports aclk]
 
 # 9.943 - 0.077
 #set_clock_latency -source -max -late 9.866 [get_clocks aclk]
-set_clock_latency -source -max -late 10.628 [get_clocks aclk]
+#set_clock_latency -source -max -late 10.628 [get_clocks aclk]
+# 10.3 - 0.077
+set_clock_latency -source -max -late 10.223 [get_clocks aclk]
 
 # 8.706 - 0.065 
 #set_clock_latency -source -min -early 8.641  [get_clocks aclk]
-set_clock_latency -source -min -early 9.3  [get_clocks aclk]
+# 11.008 - 2 - 0.065
+set_clock_latency -source -min -early 8.943  [get_clocks aclk]
 
-#set_input_jitter [get_clocks aclk] 0.194
+#set_input_jitter [get_clocks aclk] 0.163
+
+set_clock_uncertainty 0.035 [get_clocks aclk]
 
 #set_clock_uncertainty -setup 0.020 [get_clocks -of_objects [get_pins design_1_i/mbufgce_primitive_0/clk_out_o1]]
 #set_clock_uncertainty -setup 0.015 [get_clocks -of_objects [get_pins design_1_i/mbufgce_primitive_0/clk_out_o2]]

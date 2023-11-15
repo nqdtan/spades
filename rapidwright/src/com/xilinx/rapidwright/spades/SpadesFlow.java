@@ -547,6 +547,8 @@ public class SpadesFlow {
     Net gndNet = shell_design.getNet("GLOBAL_LOGIC0");
     Net vccNet = shell_design.getNet("GLOBAL_LOGIC1");
 
+    HashSet<Integer> renamedDesignIds = new HashSet<>();
+
     int numSockets = socketIds.size();
     for (Map.Entry<Integer, Pair<Integer, Pair<Integer, Integer>>> entry0 : socketIds.entrySet()) {
       int socketId = entry0.getKey();
@@ -559,8 +561,17 @@ public class SpadesFlow {
       socket_design = socketDesigns.get(designId).getSecond();
       socket_netlist = socket_design.getNetlist();
 
+      if (!renamedDesignIds.contains(designId)) {
+        socket_design.setName("design" + designId + "_" + socket_design.getName());
+        String socketDesignPrefix = "design" + designId + "_";
+        socket_netlist.getWorkLibrary().uniqueifyCellsWithPrefix(socketDesignPrefix);
+        shell_netlist.addEncryptedCells(socket_netlist.getEncryptedCells());
+        renamedDesignIds.add(designId);
+      }
+
       Net socketGndNet = socket_design.getNet("GLOBAL_LOGIC0");
       Net socketVccNet = socket_design.getNet("GLOBAL_LOGIC1");
+
       HashMap<Net, LinkedList<PIP>> staticNetPIPMap = new HashMap<>();
 
       if (!designId2ModuleMap.containsKey(designId)) {
@@ -590,6 +601,7 @@ public class SpadesFlow {
       LinkedList<PIP> socketVccPIPs = designId2SocketVccPIPsMap.get(designId);
 
       Module socketModule = designId2ModuleMap.get(designId);
+
       Site socketAnchorSite = socketModule.getAnchor();
 
       Site relocSocketAnchorSite = socketAnchorSite.getCorrespondingSite(
@@ -609,9 +621,10 @@ public class SpadesFlow {
 //        throw new RuntimeException("ERROR: Failed to relocate socket design " + socketId);
 //      }
       ModuleInst socketModuleInst = shell_design.createModuleInst("socket" + socketId, socketModule);
+
       HashSet<SiteInst> toRemoveSIs = new HashSet<>();
       for (SiteInst si : socketModuleInst.getSiteInsts()) {
-        if (si.getName().equals(socketModuleInst.getName() + "/BUFGCE_X4Y11"))
+        if (si.getName().equals(socketModuleInst.getName() + "/BUFGCE_X4Y13"))
           toRemoveSIs.add(si);
         if (si.getName().equals(socketModuleInst.getName() + "/SLICE_X58Y139"))
           toRemoveSIs.add(si);
@@ -876,6 +889,29 @@ public class SpadesFlow {
     }
 
     shell_netlist.removeLibrary("work_ulp");
+
+    for (Map.Entry<Integer, Pair<Integer, Pair<Integer, Integer>>> entry0 : socketIds.entrySet()) {
+      int socketId = entry0.getKey();
+      int designId = entry0.getValue().getFirst();
+      String socketDesignPrefix = "design"  + designId + "_";
+
+      HashSet<EDIFCell> toRenameCells = new HashSet<>();
+      for (EDIFCell ec : shell_netlist.getWorkLibrary().getCells()) {
+        if (!ec.getName().contains(socketDesignPrefix))
+          continue;
+
+        String cellName = ec.getName().substring(socketDesignPrefix.length());
+        for (String s : shell_netlist.getEncryptedCells()) {
+          if (s.contains(cellName + ".edn")) {
+            toRenameCells.add(ec);
+            break;
+          }
+        }
+      }
+      for (EDIFCell ec : toRenameCells) {
+        ec.rename(ec.getName().substring(socketDesignPrefix.length()));
+      }
+    }
 
     Cell socketManagerNMUCell = null;
     Cell socketManagerNSUCell = null;
@@ -1196,8 +1232,8 @@ public class SpadesFlow {
       allRoutedEnodes.add(enode);
     }
 
-    shell_netlist.getLibrary("work").removeCell("design_1_lut1_primitive_0_0_lut1_primitive");
-    shell_netlist.getLibrary("work").removeCell("design_1_lut1_primitive_0_0");
+    //shell_netlist.getLibrary("work").removeCell("design_1_lut1_primitive_0_0_lut1_primitive");
+    //shell_netlist.getLibrary("work").removeCell("design_1_lut1_primitive_0_0");
 
     for (Map.Entry<Integer, Pair<Integer, Pair<Integer, Integer>>> entry0 : socketIds.entrySet()) {
       int socketId = entry0.getKey();
@@ -1210,16 +1246,17 @@ public class SpadesFlow {
       socket_design = socketDesigns.get(designId).getSecond();
       socket_netlist = socket_design.getNetlist();
 
-      //String socketName = "top_i/ulp/socket" + socketId;
       String socketName = shellPrefix + "socket" + socketId;
-      EDIFCell socketEC = shell_netlist.getCell("socket_design");
+      EDIFCell socketEC = shell_netlist.getCell("design" + designId + "_" + "socket_design");
+      shell_netlist.getLibrary("work").removeCell("design" + designId + "_" + "design_1_lut1_primitive_0_0_lut1_primitive");
+      shell_netlist.getLibrary("work").removeCell("design" + designId + "_" + "design_1_lut1_primitive_0_0");
 
       if (implId < 10) {
         EDIFCellInst lut1ECI;
         if (socketEC.getCellInst("socket_cc_inst").getCellType().getCellInst("lut1_primitive_0") != null) {
-          if (flowName.equals("separateCCCL")) {
+          if (flowName.equals("separateCCCL"))
             lut1ECI = socketEC.getCellInst("socket_cc_inst").getCellType().removeCellInst("lut1_primitive_0");
-          } else
+          else
             lut1ECI = socketEC.removeCellInst("lut1_primitive_0");
 
           for (EDIFPortInst epi : lut1ECI.getPortInsts()) {
@@ -1324,56 +1361,56 @@ public class SpadesFlow {
         relocClkTile = getRelocTile(dev.getTile("CLK_REBUF_VERT_VNOC_TOP_COA_TILE_X69Y327"), relocCROffsetX, relocCROffsetY, implId);
 
       //Node snkNode = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VDISTR" + clockTrack);
-      //CLK_REBUF_VERT_VNOC_BAA_TILE_X69Y183/IF_WRAP_CLK_V_BOT_CLK_VDISTR_LEV2_11
+      //CLK_REBUF_VERT_VNOC_BAA_TILE_X69Y183/IF_WRAP_CLK_V_BOT_CLK_VDISTR_LEV2_13
       Node snkNode = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VDISTR_LEV2_" + clockTrack);
-      // CLK_REBUF_VERT_VNOC_BAA_TILE_X69Y183/IF_WRAP_CLK_V_BOT_CLK_VDISTR11
+      // CLK_REBUF_VERT_VNOC_BAA_TILE_X69Y183/IF_WRAP_CLK_V_BOT_CLK_VDISTR13
       //Node snkNode = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VDISTR" + clockTrack);
       if (implId == 3)
         snkNode = dev.getNode(relocClkTile + "/IF_WRAP_CLK_V_BOT_CLK_VROUTE" + clockTrack);
 
       HashMap<PIP, PIP> clkPIPMap = new HashMap<>();
       // IF_HCLK_CLK_HDISTR/VDISTR
-      // IF_HCLK_CLK_HDISTR_LOC11
+      // IF_HCLK_CLK_HDISTR_LOC13
       // IF_WRAP_CLK_V_BOT_CLK_VDISTR0 -> CLK_PD_OPT_DELAY_97_I, CLK_PD_OPT_DELAY_121_I
       // IF_WRAP_CLK_V_BOT_CLK_VDISTR0 -> CLK_PD_OPT_DELAY_108_I, CLK_PD_OPT_DELAY_132_I
       for (PIP pip : mbufgceClk1Nets[socketId].getPIPs()) {
         boolean FoundNewPIP = false;
         String newPIPName = pip.toString();
-        if (newPIPName.contains("DISTR11") && !newPIPName.contains("IF_WRAP_CLK_V_TOP_CLK_VDISTR")) {
-          newPIPName = pip.toString().replaceAll("DISTR11", "DISTR" + clockTrack);
+        if (newPIPName.contains("DISTR13") && !newPIPName.contains("IF_WRAP_CLK_V_TOP_CLK_VDISTR")) {
+          newPIPName = pip.toString().replaceAll("DISTR13", "DISTR" + clockTrack);
           FoundNewPIP = true;
         }
-//        if (newPIPName.contains("LEV1_11")) {
-//          newPIPName = pip.toString().replaceAll("LEV1_11", "LEV1_" + clockTrack);
+//        if (newPIPName.contains("LEV1_13")) {
+//          newPIPName = pip.toString().replaceAll("LEV1_13", "LEV1_" + clockTrack);
 //          FoundNewPIP = true;
 //        }
-//        if (newPIPName.contains("LEV2_11")) {
-//          newPIPName = pip.toString().replaceAll("LEV2_11", "LEV2_" + clockTrack);
+//        if (newPIPName.contains("LEV2_13")) {
+//          newPIPName = pip.toString().replaceAll("LEV2_13", "LEV2_" + clockTrack);
 //          FoundNewPIP = true;
 //        }
-        if (newPIPName.contains("VROUTE11")) {
-          //newPIPName = pip.toString().replaceAll("VROUTE11", "VROUTE" + clockTrack);
+        if (newPIPName.contains("VROUTE13")) {
+          //newPIPName = pip.toString().replaceAll("VROUTE13", "VROUTE" + clockTrack);
           //FoundNewPIP = true;
         }
-        if (newPIPName.contains("HDISTR_LOC11")) {
-          newPIPName = pip.toString().replaceAll("HDISTR_LOC11", "HDISTR_LOC" + clockTrack);
+        if (newPIPName.contains("HDISTR_LOC13")) {
+          newPIPName = pip.toString().replaceAll("HDISTR_LOC13", "HDISTR_LOC" + clockTrack);
           FoundNewPIP = true;
         }
-        if (newPIPName.contains("CLK_PD_OPT_DELAY_108")) {
+        if (newPIPName.contains("CLK_PD_OPT_DELAY_110")) {
           int optDelayNum = 97 + clockTrack;
-          newPIPName = newPIPName.replaceAll("CLK_PD_OPT_DELAY_108", "CLK_PD_OPT_DELAY_" + optDelayNum);
+          newPIPName = newPIPName.replaceAll("CLK_PD_OPT_DELAY_110", "CLK_PD_OPT_DELAY_" + optDelayNum);
           FoundNewPIP = true;
         }
-        if (newPIPName.contains("CLK_PD_OPT_DELAY_132")) {
+        if (newPIPName.contains("CLK_PD_OPT_DELAY_134")) {
           int optDelayNum = 121 + clockTrack;
-          newPIPName = newPIPName.replaceAll("CLK_PD_OPT_DELAY_132", "CLK_PD_OPT_DELAY_" + optDelayNum);
+          newPIPName = newPIPName.replaceAll("CLK_PD_OPT_DELAY_134", "CLK_PD_OPT_DELAY_" + optDelayNum);
           FoundNewPIP = true;
         }
         // Special case for tile CLK_VNOC_PSS_CCA_TILE_X23Y47
         if (newPIPName.contains("CLK_VNOC_PSS_CCA_TILE_X23Y47") &&
-            newPIPName.contains("CLK_PD_OPT_DELAY_144")) {
+            newPIPName.contains("CLK_PD_OPT_DELAY_146")) {
           int optDelayNum = 133 + clockTrack;
-          newPIPName = newPIPName.replaceAll("CLK_PD_OPT_DELAY_144", "CLK_PD_OPT_DELAY_" + optDelayNum);
+          newPIPName = newPIPName.replaceAll("CLK_PD_OPT_DELAY_146", "CLK_PD_OPT_DELAY_" + optDelayNum);
           FoundNewPIP = true;
         }
 
@@ -1422,7 +1459,7 @@ public class SpadesFlow {
             System.out.println("[2] to remove PIP " + pip);
             toRemovePIPs.add(pip);
           }
-          if (pip.toString().contains("IF_WRAP_CLK_V_BOT_CLK_VROUTE11") && pip.toString().contains("CLK_CMT_MUX_4TO1")) {
+          if (pip.toString().contains("IF_WRAP_CLK_V_BOT_CLK_VROUTE13") && pip.toString().contains("CLK_CMT_MUX_4TO1")) {
             System.out.println("[2] to remove PIP " + pip);
             toRemovePIPs.add(pip);
           }

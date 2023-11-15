@@ -210,6 +210,11 @@ public class SocketStitch {
     System.out.println(clAnchorSite);
 
     ModuleInst clModuleInst = socketDesign.createModuleInst("socket_cl_inst", clModule);
+    for (SiteInst si : clModuleInst.getSiteInsts()) {
+      if (si.getName().equals("socket_cl_inst/BUFGCE_X4Y13")) {
+        si.unrouteSite();
+      }
+    }
 
     System.out.println("After ModInst");
     System.out.println(clGndNet + " " + clGndNet.getPIPs().size());
@@ -892,11 +897,17 @@ public class SocketStitch {
 //    }
 
     if (FullyRoute) {
-      vccNet.addPIP(dev.getPIP("INT_X35Y0/INT.VCC_WIRE->>IMUX_B_W51"));
-      vccNet.addPIP(dev.getPIP("BLI_CLE_BOT_CORE_X35Y0/BLI_CLE_BOT_CORE_MY.INTF_IRI_QUADRANT_RED_12_IMUX_IN15->>INTF_IRI_QUADRANT_RED_12_IMUX_IN15_PIN"));
-      vccNet.addPIP(dev.getPIP("BLI_CLE_BOT_CORE_X35Y0/BLI_CLE_BOT_CORE_MY.INTF_IRI_QUADRANT_RED_12_IMUX_IN15_PIN->>INTF_IRI_QUADRANT_RED_12_IMUX_O15_PIN"));
-      vccNet.addPIP(dev.getPIP("BLI_CLE_BOT_CORE_X35Y0/BLI_CLE_BOT_CORE_MY.INTF_IRI_QUADRANT_RED_12_IMUX_O15_PIN->>INTF_IRI_QUADRANT_RED_12_IMUX_O15"));
-      vccNet.addPIP(dev.getPIP("CLK_REBUF_BUFGS_HSR_CORE_X31Y0/CLK_REBUF_BUFGS_HSR_CORE.CLK_BUFGCE_33_CE->>CLK_BUFGCE_33_CE_PIN"));
+//      vccNet.addPIP(dev.getPIP("INT_X35Y0/INT.VCC_WIRE->>IMUX_B_W51"));
+//      vccNet.addPIP(dev.getPIP("BLI_CLE_BOT_CORE_X35Y0/BLI_CLE_BOT_CORE_MY.INTF_IRI_QUADRANT_RED_12_IMUX_IN15->>INTF_IRI_QUADRANT_RED_12_IMUX_IN15_PIN"));
+//      vccNet.addPIP(dev.getPIP("BLI_CLE_BOT_CORE_X35Y0/BLI_CLE_BOT_CORE_MY.INTF_IRI_QUADRANT_RED_12_IMUX_IN15_PIN->>INTF_IRI_QUADRANT_RED_12_IMUX_O15_PIN"));
+//      vccNet.addPIP(dev.getPIP("BLI_CLE_BOT_CORE_X35Y0/BLI_CLE_BOT_CORE_MY.INTF_IRI_QUADRANT_RED_12_IMUX_O15_PIN->>INTF_IRI_QUADRANT_RED_12_IMUX_O15"));
+//      vccNet.addPIP(dev.getPIP("CLK_REBUF_BUFGS_HSR_CORE_X31Y0/CLK_REBUF_BUFGS_HSR_CORE.CLK_BUFGCE_33_CE->>CLK_BUFGCE_33_CE_PIN"));
+
+      vccNet.addPIP(dev.getPIP("INT_X35Y0/INT.VCC_WIRE->>IMUX_B_W17"));
+      vccNet.addPIP(dev.getPIP("BLI_CLE_BOT_CORE_X35Y0/BLI_CLE_BOT_CORE_MY.INTF_IRI_QUADRANT_GREEN_13_IMUX_IN5_PIN->>INTF_IRI_QUADRANT_GREEN_13_IMUX_O5_PIN"));
+      vccNet.addPIP(dev.getPIP("BLI_CLE_BOT_CORE_X35Y0/BLI_CLE_BOT_CORE_MY.INTF_IRI_QUADRANT_GREEN_13_IMUX_IN5->>INTF_IRI_QUADRANT_GREEN_13_IMUX_IN5_PIN"));
+      vccNet.addPIP(dev.getPIP("BLI_CLE_BOT_CORE_X35Y0/BLI_CLE_BOT_CORE_MY.INTF_IRI_QUADRANT_GREEN_13_IMUX_O5_PIN->>INTF_IRI_QUADRANT_GREEN_13_IMUX_O5"));
+      vccNet.addPIP(dev.getPIP("CLK_REBUF_BUFGS_HSR_CORE_X31Y0/CLK_REBUF_BUFGS_HSR_CORE.CLK_BUFGCE_39_CE->>CLK_BUFGCE_39_CE_PIN"));
     }
 
     if (designId == 4) {
@@ -908,7 +919,8 @@ public class SocketStitch {
     }
 
     HashSet<PIP> toRemovePIPs = new HashSet<>();
-    PIP clkPIP = dev.getPIP("CLK_REBUF_BUFGS_HSR_CORE_X31Y0/CLK_REBUF_BUFGS_HSR_CORE.CLK_BUFGCE_33_O_PIN->>CLK_BUFGCE_33_O"); // Clk Track 11
+//    PIP clkPIP = dev.getPIP("CLK_REBUF_BUFGS_HSR_CORE_X31Y0/CLK_REBUF_BUFGS_HSR_CORE.CLK_BUFGCE_33_O_PIN->>CLK_BUFGCE_33_O"); // Clk Track 11
+    PIP clkPIP = dev.getPIP("CLK_REBUF_BUFGS_HSR_CORE_X31Y0/CLK_REBUF_BUFGS_HSR_CORE.CLK_BUFGCE_39_O_PIN->>CLK_BUFGCE_39_O"); // Clk Track 13
     int cnt = 1;
 
     while (!isTileValid(clkPIP.getTile(), designId)) {
@@ -981,8 +993,8 @@ public class SocketStitch {
       Cell mbufgCell = socketDesign.createAndPlaceCell(
         socketNetlist.getTopCell(),
         "MBUFGCE_inst", Unisim.MBUFGCE,
-        dev.getSite("BUFGCE_X4Y11"),
-        dev.getSite("BUFGCE_X4Y11").getBEL("BUFCE"));
+        dev.getSite("BUFGCE_X4Y13"),
+        dev.getSite("BUFGCE_X4Y13").getBEL("BUFCE"));
 
       EDIFNet mbufgceClrnLNet = top.createNet("mbufgce_clr_n");
       EDIFPort mbufgceClrnPort = top.createPort("mbufgce_clr_n", EDIFDirection.INPUT, 1);

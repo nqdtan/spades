@@ -1,7 +1,8 @@
 create_clock -period 2.000 -name clk -waveform {0.000 1.000} -add [get_ports clk]
 
-set_clock_latency -source -max -late 10.628 [get_clocks clk]
-set_clock_latency -source -min -early 9.3   [get_clocks clk]
+set_clock_latency -source -max -late 10.223 [get_clocks clk]
+set_clock_latency -source -min -early 8.943  [get_clocks clk]
+set_clock_uncertainty 0.035 [get_clocks clk]
 
 create_pblock pblock_rg_cl
 add_cells_to_pblock [get_pblocks pblock_rg_cl] [get_cells custom_logic]

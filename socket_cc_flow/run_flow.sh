@@ -23,7 +23,7 @@ if [ -f "$FILE" ]; then
   cd ${project_name}/${project_name}.runs/impl_1
   rm -rf ext && unzip socket_cc.dcp -d ext
   cd ext/ && rm *.ncr *.nts && cp ../../../../dcp.xml .
-  zip socket_cc.dcp * && mv socket_cc.dcp ../
+  zip socket_cc.dcp * && mv socket_cc.dcp ../ && cd ../
   cp socket_cc.dcp ../../../../checkpoints/
   cp socket_cc.edf ../../../../checkpoints/
 fi
