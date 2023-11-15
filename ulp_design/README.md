@@ -1,4 +1,11 @@
 
+First, please make sure base platform checkpoint and shell utility IPs are present
+at spades/ulp_design/utils. They can be found in the `spades\_assets`.
+
+```
+cp /path/to/spades_assets/utils /path/to/spades/ulp_design/ -R
+```
+
 Available commands
 
 ```

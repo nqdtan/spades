@@ -19,7 +19,7 @@
 # DEALINGS IN THE SOFTWARE.
 ############################################################
 
-read_xdc /path/to/ulp_design/constrs/floorplan.xdc
+read_xdc /path/to/spades/ulp_design/constrs/floorplan.xdc
 
 # Set pdi properties to accelerate device download
 set_property bitstream.general.npiDmaMode Yes [current_design]
