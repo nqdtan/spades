@@ -4,11 +4,12 @@
 #define IFM_DIM 13
 #define WT_DIM 3
 #define PAD 1
-#define OFM_DIM (IFM_DIM + 2 * PAD - WT_DIM + 1)
-#define IFM_CHN 2//32//36
-#define OFM_CHN 2//16//8
-#define NUM_CONV2D 1//12
-#define OFM_CNT 2//8
+#define STRIDE 1
+#define OFM_DIM (((IFM_DIM + 2 * PAD - WT_DIM) / STRIDE) + 1)
+#define IFM_CHN 36
+#define OFM_CHN 16
+#define NUM_CONV2D 8
+#define OFM_CNT 8
 #define IFM_CHN_SCALE (IFM_CHN / NUM_CONV2D)
 
 #define IFM_P_DIM (OFM_DIM)
@@ -16,12 +17,12 @@
 #define IFM_P_CHN (OFM_CHN)
 #define OFM_P_CHN (IFM_P_CHN)
 
-#define WT_SIZE_CEIL  (((WT_DIM * WT_DIM + 7) / 8) * 8)
-#define IFM_SIZE_CEIL (((IFM_DIM * IFM_DIM + 7) / 8) * 8)
-#define OFM_SIZE_CEIL (((OFM_DIM * OFM_DIM + 7) / 8) * 8)
+#define WT_SIZE_CEIL  (((WT_DIM * WT_DIM + 15) / 16) * 16)
+#define IFM_SIZE_CEIL (((IFM_DIM * IFM_DIM + 15) / 16) * 16)
+#define OFM_SIZE_CEIL (((OFM_DIM * OFM_DIM + 15) / 16) * 16)
 
-#define IFM_P_SIZE_CEIL (((IFM_P_DIM * IFM_P_DIM + 7) / 8) * 8)
-#define OFM_P_SIZE_CEIL (((OFM_P_DIM * OFM_P_DIM + 7) / 8) * 8)
+#define IFM_P_SIZE_CEIL (((IFM_P_DIM * IFM_P_DIM + 15) / 16) * 16)
+#define OFM_P_SIZE_CEIL (((OFM_P_DIM * OFM_P_DIM + 15) / 16) * 16)
 
 #define WT_LEN  (OFM_CHN * IFM_CHN * WT_SIZE_CEIL)
 #define IFM_LEN (IFM_CHN * IFM_SIZE_CEIL)
@@ -54,7 +55,7 @@ int main() {
 
   for (int i = 0; i < OFM_CHN; i+=OFM_CNT) {
     // fetch ofm
-    LSU0_RAM_START_IDX = 24;
+    LSU0_RAM_START_IDX = 16;
     LSU0_RAM_ADDR_OFFSET = 0;
     LSU0_RAM_BLOCK_FACTOR = OFM_CNT * OFM_SIZE_CEIL / LSU_WIDTH_SCALE;
     LSU0_RAM_CYCLIC_FACTOR = 1;
@@ -82,7 +83,7 @@ int main() {
     TQ_LSU1_START();
 
     // fetch ifm
-    LSU0_RAM_START_IDX = 12;
+    LSU0_RAM_START_IDX = 8;
     LSU0_RAM_ADDR_OFFSET = 0;
     LSU0_SEG_STRIDE = 0;
     LSU0_SEG_COUNT = 1;
@@ -117,7 +118,7 @@ int main() {
       TQ_LSU1_START();
 
       // fetch ifm
-      LSU0_RAM_START_IDX = 12;
+      LSU0_RAM_START_IDX = 8;
       LSU0_RAM_ADDR_OFFSET = (pp == 0) ? IFM_SIZE_CEIL / LSU_WIDTH_SCALE : 0;
       LSU0_SEG_STRIDE = 0;
       LSU0_SEG_COUNT = 1;
@@ -149,19 +150,18 @@ int main() {
       pp = 1 - pp;
     }
 
-    // maxpool
-    for (int k = 0; k < OFM_CNT; k++) {
-      KRN_IFM_OFFSET = k * OFM_SIZE_CEIL / LSU_WIDTH_SCALE;
-      //KRN_OFM_OFFSET = k * OFM_P_SIZE_CEIL / LSU_WIDTH_SCALE;
-      KRN_OFM_OFFSET = k * OFM_SIZE_CEIL / LSU_WIDTH_SCALE;
-      KRN_STATE = 2;
-      KRN_START = 1;
-      TQ_CL_START();
-      TQ_CL_DONE();
-    }
+//    // maxpool
+//    for (int k = 0; k < OFM_CNT; k++) {
+//      KRN_IFM_OFFSET = k * OFM_SIZE_CEIL / LSU_WIDTH_SCALE;
+//      KRN_OFM_OFFSET = k * OFM_SIZE_CEIL / LSU_WIDTH_SCALE;
+//      KRN_STATE = 2;
+//      KRN_START = 1;
+//      TQ_CL_START();
+//      TQ_CL_DONE();
+//    }
 
     // write ofm
-    LSU0_RAM_START_IDX = 24;
+    LSU0_RAM_START_IDX = 16;
     LSU0_RAM_ADDR_OFFSET = 0;
     LSU0_RAM_BLOCK_FACTOR = OFM_CNT * OFM_SIZE_CEIL / LSU_WIDTH_SCALE;
     LSU0_RAM_CYCLIC_FACTOR = 1;
@@ -170,16 +170,6 @@ int main() {
     LSU0_SEG_COUNT = 1;
     LSU0_LEN = OFM_CNT * OFM_SIZE_CEIL / WORD_SCALE;
     LSU0_MODE = 2;
-
-//    LSU0_RAM_START_IDX = 24;
-//    LSU0_RAM_ADDR_OFFSET = 0;
-//    LSU0_RAM_BLOCK_FACTOR = OFM_CNT * OFM_P_SIZE_CEIL / LSU_WIDTH_SCALE;
-//    LSU0_RAM_CYCLIC_FACTOR = 1;
-//    LSU0_M_OFFSET_LO = (WT_LEN + IFM_LEN + i * OFM_SIZE_CEIL) << LOG2_WORD_SIZE;
-//    LSU0_SEG_STRIDE = 0;
-//    LSU0_SEG_COUNT = 1;
-//    LSU0_LEN = (OFM_CNT * OFM_P_SIZE_CEIL + WORD_SCALE - 1) / WORD_SCALE;
-//    LSU0_MODE = 2;
 
     TQ_LSU0_START();
     TQ_LSU0_DONE();

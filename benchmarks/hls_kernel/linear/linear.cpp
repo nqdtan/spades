@@ -1,6 +1,8 @@
 
 #include <iostream>
 #include "linear.h"
+#include <ap_int.h>
+typedef ap_int<64> DATATYPE_IF;
 
 #define IFM_BLK_LEN 32
 #define OFM_BLK_LEN 64
@@ -154,14 +156,20 @@ void cl_linear(
   int tmp0, tmp1;
   DATATYPE tmp0_f, tmp1_f;
   for (int i = 0; i < IFM_BLK_LEN/2; i+=1) {
-    #pragma HLS UNROLL
-    tmp0 = ifm[ifm_offset + i].range(31, 0);
-    tmp1 = ifm[ifm_offset + i].range(63, 32);
-    local_ifm[2*i+0] = *(reinterpret_cast<DATATYPE*>(&tmp0));
-    local_ifm[2*i+1] = *(reinterpret_cast<DATATYPE*>(&tmp1));
+    if (i < ifm_len / 2) {
+      #pragma HLS UNROLL
+      tmp0 = ifm[ifm_offset + i].range(31, 0);
+      tmp1 = ifm[ifm_offset + i].range(63, 32);
+      local_ifm[2*i+0] = *(reinterpret_cast<DATATYPE*>(&tmp0));
+      local_ifm[2*i+1] = *(reinterpret_cast<DATATYPE*>(&tmp1));
+    } else {
+      local_ifm[2*i+0] = 0;
+      local_ifm[2*i+1] = 0;
+    }
   }
 
-  for (int j = 0; j < ofm_len/2; j+=2) {
+//  for (int j = 0; j < ofm_len/2; j+=2) {
+  for (int j = 0; j < OFM_BLK_LEN/2; j+=2) {
     #pragma HLS PIPELINE II=1
     tmp0 = wt00[j].range(31, 0);
     tmp1 = wt00[j].range(63, 32);
@@ -504,10 +512,15 @@ void cl_linear(
   for (int i = 0; i < ofm_len; i++) {
     #pragma HLS PIPELINE II=1
     #pragma HLS DEPENDENCE variable=ofm inter false
-    DATATYPE local_ofm_tmp = ((i % 2 == 0) && (i < ofm_len/2)) ? local_ofm[i/2][0] :
-                             ((i % 2 == 1) && (i < ofm_len/2)) ? local_ofm[i/2][1] :
-                             ((i % 2 == 0) && (i >= ofm_len/2))? local_ofm[(i-ofm_len/2)/2][2] :
-                                                                 local_ofm[(i-ofm_len/2)/2][3];
+//    DATATYPE local_ofm_tmp = ((i % 2 == 0) && (i < ofm_len/2)) ? local_ofm[i/2][0] :
+//                             ((i % 2 == 1) && (i < ofm_len/2)) ? local_ofm[i/2][1] :
+//                             ((i % 2 == 0) && (i >= ofm_len/2))? local_ofm[(i-ofm_len/2)/2][2] :
+//                                                                 local_ofm[(i-ofm_len/2)/2][3];
+
+    DATATYPE local_ofm_tmp = ((i % 2 == 0) && (i < OFM_BLK_LEN/2)) ? local_ofm[i/2][0] :
+                             ((i % 2 == 1) && (i < OFM_BLK_LEN/2)) ? local_ofm[i/2][1] :
+                             ((i % 2 == 0) && (i >= OFM_BLK_LEN/2))? local_ofm[(i-OFM_BLK_LEN/2)/2][2] :
+                                                                     local_ofm[(i-OFM_BLK_LEN/2)/2][3];
 
     if (i % 2 == 0) {
       if (init_ofm) {

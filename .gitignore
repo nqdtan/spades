@@ -19,6 +19,7 @@ control_top.h
 __pycache__
 scripts/*.v
 rtl/*.mif*
+benchmarks/hls_kernel/*/*mif*
 rtl/project_*
 controller_software/*/*.mif
 ulp_design/project_*
@@ -29,3 +30,4 @@ socket_cl_flow/project_*
 pdi_gen/project_*
 benchmarks/hls_kernel/*/proj
 checkpoints/hd_visual
+*xclbin.info

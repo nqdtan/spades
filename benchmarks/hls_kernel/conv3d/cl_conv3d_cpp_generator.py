@@ -1,22 +1,40 @@
+import sys
 
+def main(argv):
+  num_banks = int(argv[0])
+#  ifm_dim = int(argv[1])
+#  wt_dim = int(argv[2])
+#  stride = int(argv[3])
+#  pad = int(argv[4])
+
+  ifm_dim = 13
+  wt_dim = 3
+  stride = 1
+  pad = 1
+
+  code = ""
+
+  code += """
 #include <ap_int.h>
 typedef ap_int<64> DATATYPE_IF;
 #include "conv3d.h"
 
-#define IFM_DIM 13
-#define WT_DIM 3
-#define STRIDE 1
-#define PAD 1
+#define IFM_DIM {1}
+#define WT_DIM {2}
+#define STRIDE {3}
+#define PAD {4}
 #define OFM_DIM (((IFM_DIM + 2 * PAD - WT_DIM) / STRIDE) + 1)
 #define PSUM_LEN (IFM_DIM + 2 * PAD - (WT_DIM - 1))
 
-#define NUM_CONV2D 8
+#define NUM_CONV2D {0}
 
 #define IFM_P_DIM (OFM_DIM)
 #define P_DIM 3
 #define OFM_P_DIM (IFM_P_DIM / 2)
 
+""".format(num_banks, ifm_dim, wt_dim, stride, pad)
 
+  code += """
 void cl_conv2d(
   DATATYPE_IF ifm[4096],
   DATATYPE_IF wt[4096],
@@ -136,111 +154,53 @@ void cl_conv2d(
   }
 
 }
+"""
 
+  code += """
 void cl_conv3d(
+"""
 
-  DATATYPE_IF ifm0[4096],
+  for i in range(num_banks):
+    code += """
+  DATATYPE_IF ifm{0}[4096],
+""".format(i)
 
-  DATATYPE_IF ifm1[4096],
+  for i in range(num_banks):
+    code += """
+  DATATYPE_IF wt{0}[4096],
+""".format(i)
 
-  DATATYPE_IF ifm2[4096],
-
-  DATATYPE_IF ifm3[4096],
-
-  DATATYPE_IF ifm4[4096],
-
-  DATATYPE_IF ifm5[4096],
-
-  DATATYPE_IF ifm6[4096],
-
-  DATATYPE_IF ifm7[4096],
-
-  DATATYPE_IF wt0[4096],
-
-  DATATYPE_IF wt1[4096],
-
-  DATATYPE_IF wt2[4096],
-
-  DATATYPE_IF wt3[4096],
-
-  DATATYPE_IF wt4[4096],
-
-  DATATYPE_IF wt5[4096],
-
-  DATATYPE_IF wt6[4096],
-
-  DATATYPE_IF wt7[4096],
-
+  code += """
   DATATYPE_IF ofm[4096],
   int len, int wt_offset, int ifm_offset, int ofm_offset, int state
 ) {
+"""
 
-#pragma HLS INTERFACE mode=ap_memory port=ifm0 latency=3
+  for i in range(num_banks):
+    code += """
+#pragma HLS INTERFACE mode=ap_memory port=ifm{0} latency=3
+""".format(i)
 
-#pragma HLS INTERFACE mode=ap_memory port=ifm1 latency=3
+  for i in range(num_banks):
+    code += """
+#pragma HLS INTERFACE mode=ap_memory port=wt{0} latency=3 storage_type=ram_1p
+""".format(i)
 
-#pragma HLS INTERFACE mode=ap_memory port=ifm2 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=ifm3 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=ifm4 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=ifm5 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=ifm6 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=ifm7 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=wt0 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt1 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt2 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt3 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt4 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt5 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt6 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt7 latency=3 storage_type=ram_1p
-
+  code += """
 #pragma HLS INTERFACE mode=ap_memory port=ofm latency=3
+"""
 
-  DATATYPE ofm0[OFM_DIM * OFM_DIM];
+  for i in range(num_banks):
+    code += """
+  DATATYPE ofm{0}[OFM_DIM * OFM_DIM];
+""".format(i)
 
-  DATATYPE ofm1[OFM_DIM * OFM_DIM];
+  for i in range(num_banks):
+    code += """
+  cl_conv2d(ifm{0}, wt{0}, ofm{0}, wt_offset, ifm_offset, len >= {1});
+""".format(i, i + 1)
 
-  DATATYPE ofm2[OFM_DIM * OFM_DIM];
-
-  DATATYPE ofm3[OFM_DIM * OFM_DIM];
-
-  DATATYPE ofm4[OFM_DIM * OFM_DIM];
-
-  DATATYPE ofm5[OFM_DIM * OFM_DIM];
-
-  DATATYPE ofm6[OFM_DIM * OFM_DIM];
-
-  DATATYPE ofm7[OFM_DIM * OFM_DIM];
-
-  cl_conv2d(ifm0, wt0, ofm0, wt_offset, ifm_offset, len >= 1);
-
-  cl_conv2d(ifm1, wt1, ofm1, wt_offset, ifm_offset, len >= 2);
-
-  cl_conv2d(ifm2, wt2, ofm2, wt_offset, ifm_offset, len >= 3);
-
-  cl_conv2d(ifm3, wt3, ofm3, wt_offset, ifm_offset, len >= 4);
-
-  cl_conv2d(ifm4, wt4, ofm4, wt_offset, ifm_offset, len >= 5);
-
-  cl_conv2d(ifm5, wt5, ofm5, wt_offset, ifm_offset, len >= 6);
-
-  cl_conv2d(ifm6, wt6, ofm6, wt_offset, ifm_offset, len >= 7);
-
-  cl_conv2d(ifm7, wt7, ofm7, wt_offset, ifm_offset, len >= 8);
-
+  code += """
 
   DATATYPE_IF tmp_if;
   int tmp0, tmp1;
@@ -250,17 +210,19 @@ void cl_conv3d(
       #pragma HLS PIPELINE II=1
       #pragma HLS DEPENDENCE variable=ofm inter false
       int ind = i * OFM_DIM + j;
-      DATATYPE ofm0_val = (len >= 1) ? ofm0[ind] : 0;
-      DATATYPE ofm1_val = (len >= 2) ? ofm1[ind] : 0;
-      DATATYPE ofm2_val = (len >= 3) ? ofm2[ind] : 0;
-      DATATYPE ofm3_val = (len >= 4) ? ofm3[ind] : 0;
-      DATATYPE ofm4_val = (len >= 5) ? ofm4[ind] : 0;
-      DATATYPE ofm5_val = (len >= 6) ? ofm5[ind] : 0;
-      DATATYPE ofm6_val = (len >= 7) ? ofm6[ind] : 0;
-      DATATYPE ofm7_val = (len >= 8) ? ofm7[ind] : 0;
+"""
+  for i in range(num_banks):
+    code += "      DATATYPE ofm{0}_val = (len >= {1}) ? ofm{0}[ind] : 0;\n".format(i, i + 1)
 
-      DATATYPE tmp = ofm0_val + ofm1_val + ofm2_val + ofm3_val + ofm4_val + ofm5_val + ofm6_val + ofm7_val + 0;
+  code += """
+      DATATYPE tmp = """
 
+  for i in range(num_banks):
+    code += "ofm{0}_val + ".format(i)
+
+  code += "0;\n"
+
+  code += """
       if (j < OFM_DIM) {
         //ofm[i * OFM_DIM + j] += ofm0[i * OFM_DIM + j] + ofm1[i * OFM_DIM + j];
 
@@ -290,162 +252,72 @@ void cl_conv3d(
   }
 
 }
+"""
 
+  code += """
 void cl_conv3d_base(
+"""
 
-  DATATYPE_IF ifm0[4096],
+  for i in range(num_banks):
+    code += """
+  DATATYPE_IF ifm{0}[4096],
+""".format(i)
 
-  DATATYPE_IF ifm1[4096],
+  for i in range(num_banks):
+    code += """
+  DATATYPE_IF wt{0}[4096],
+""".format(i)
 
-  DATATYPE_IF ifm2[4096],
+  for i in range(num_banks):
+    code += """
+  DATATYPE    ofm{0}[4096],
+""".format(i)
 
-  DATATYPE_IF ifm3[4096],
-
-  DATATYPE_IF ifm4[4096],
-
-  DATATYPE_IF ifm5[4096],
-
-  DATATYPE_IF ifm6[4096],
-
-  DATATYPE_IF ifm7[4096],
-
-  DATATYPE_IF wt0[4096],
-
-  DATATYPE_IF wt1[4096],
-
-  DATATYPE_IF wt2[4096],
-
-  DATATYPE_IF wt3[4096],
-
-  DATATYPE_IF wt4[4096],
-
-  DATATYPE_IF wt5[4096],
-
-  DATATYPE_IF wt6[4096],
-
-  DATATYPE_IF wt7[4096],
-
-  DATATYPE    ofm0[4096],
-
-  DATATYPE    ofm1[4096],
-
-  DATATYPE    ofm2[4096],
-
-  DATATYPE    ofm3[4096],
-
-  DATATYPE    ofm4[4096],
-
-  DATATYPE    ofm5[4096],
-
-  DATATYPE    ofm6[4096],
-
-  DATATYPE    ofm7[4096],
-
+  code += """
   int len, int wt_offset, int ifm_offset
 ) {
+"""
 
-#pragma HLS INTERFACE mode=ap_memory port=ifm0 latency=3
+  for i in range(num_banks):
+    code += """
+#pragma HLS INTERFACE mode=ap_memory port=ifm{0} latency=3
+""".format(i)
 
-#pragma HLS INTERFACE mode=ap_memory port=ifm1 latency=3
+  for i in range(num_banks):
+    code += """
+#pragma HLS INTERFACE mode=ap_memory port=wt{0} latency=3 storage_type=ram_1p
+""".format(i)
 
-#pragma HLS INTERFACE mode=ap_memory port=ifm2 latency=3
+  for i in range(num_banks):
+    code += """
+#pragma HLS INTERFACE mode=ap_memory port=ofm{0} latency=3 storage_type=ram_1p
+""".format(i)
 
-#pragma HLS INTERFACE mode=ap_memory port=ifm3 latency=3
+  for i in range(num_banks):
+    code += """
+  cl_conv2d(ifm{0}, wt{0}, ofm{0}, wt_offset, ifm_offset, len >= {1});
+""".format(i, i + 1)
 
-#pragma HLS INTERFACE mode=ap_memory port=ifm4 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=ifm5 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=ifm6 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=ifm7 latency=3
-
-#pragma HLS INTERFACE mode=ap_memory port=wt0 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt1 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt2 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt3 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt4 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt5 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt6 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=wt7 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=ofm0 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=ofm1 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=ofm2 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=ofm3 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=ofm4 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=ofm5 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=ofm6 latency=3 storage_type=ram_1p
-
-#pragma HLS INTERFACE mode=ap_memory port=ofm7 latency=3 storage_type=ram_1p
-
-  cl_conv2d(ifm0, wt0, ofm0, wt_offset, ifm_offset, len >= 1);
-
-  cl_conv2d(ifm1, wt1, ofm1, wt_offset, ifm_offset, len >= 2);
-
-  cl_conv2d(ifm2, wt2, ofm2, wt_offset, ifm_offset, len >= 3);
-
-  cl_conv2d(ifm3, wt3, ofm3, wt_offset, ifm_offset, len >= 4);
-
-  cl_conv2d(ifm4, wt4, ofm4, wt_offset, ifm_offset, len >= 5);
-
-  cl_conv2d(ifm5, wt5, ofm5, wt_offset, ifm_offset, len >= 6);
-
-  cl_conv2d(ifm6, wt6, ofm6, wt_offset, ifm_offset, len >= 7);
-
-  cl_conv2d(ifm7, wt7, ofm7, wt_offset, ifm_offset, len >= 8);
-
+  code += """
 }
 
 void cl_conv3d_acc(
+"""
+  for i in range(num_banks):
+    code += """
+  volatile DATATYPE *ofm{0},
+""".format(i)
 
-  volatile DATATYPE *ofm0,
-
-  volatile DATATYPE *ofm1,
-
-  volatile DATATYPE *ofm2,
-
-  volatile DATATYPE *ofm3,
-
-  volatile DATATYPE *ofm4,
-
-  volatile DATATYPE *ofm5,
-
-  volatile DATATYPE *ofm6,
-
-  volatile DATATYPE *ofm7,
-
+  code += """
   DATATYPE_IF ofm[4096], int ofm_offset) {
+"""
 
-#pragma HLS INTERFACE mode=ap_vld port=ofm0
+  for i in range(num_banks):
+    code += """
+#pragma HLS INTERFACE mode=ap_vld port=ofm{0}
+""".format(i)
 
-#pragma HLS INTERFACE mode=ap_vld port=ofm1
-
-#pragma HLS INTERFACE mode=ap_vld port=ofm2
-
-#pragma HLS INTERFACE mode=ap_vld port=ofm3
-
-#pragma HLS INTERFACE mode=ap_vld port=ofm4
-
-#pragma HLS INTERFACE mode=ap_vld port=ofm5
-
-#pragma HLS INTERFACE mode=ap_vld port=ofm6
-
-#pragma HLS INTERFACE mode=ap_vld port=ofm7
-
+  code += """
 #pragma HLS INTERFACE mode=ap_memory port=ofm latency=3
 
   DATATYPE_IF tmp_if;
@@ -455,17 +327,20 @@ void cl_conv3d_acc(
     for (int j = 0; j < IFM_DIM + 2 * PAD; j++) {
       #pragma HLS PIPELINE II=1
       #pragma HLS DEPENDENCE variable=ofm inter false
-      DATATYPE ofm0_val = *ofm0;
-      DATATYPE ofm1_val = *ofm1;
-      DATATYPE ofm2_val = *ofm2;
-      DATATYPE ofm3_val = *ofm3;
-      DATATYPE ofm4_val = *ofm4;
-      DATATYPE ofm5_val = *ofm5;
-      DATATYPE ofm6_val = *ofm6;
-      DATATYPE ofm7_val = *ofm7;
+"""
 
-      DATATYPE tmp = ofm0_val + ofm1_val + ofm2_val + ofm3_val + ofm4_val + ofm5_val + ofm6_val + ofm7_val + 0;
+  for i in range(num_banks):
+    code += "      DATATYPE ofm{0}_val = *ofm{0};\n".format(i, i + 1)
 
+  code += """
+      DATATYPE tmp = """
+
+  for i in range(num_banks):
+    code += "ofm{0}_val + ".format(i)
+
+  code += "0;\n"
+
+  code += """
       int i1 = i - (WT_DIM - 1);
       int j1 = j - (WT_DIM - 1);
       if ((i1 >= 0) && (j1 >= 0) && (j % STRIDE == 0) && (i % STRIDE == 0)) {
@@ -496,7 +371,9 @@ void cl_conv3d_acc(
     }
   }
 }
+"""
 
+  code += """
 void cl_maxpool(
   DATATYPE_IF ifm[4096],
   DATATYPE_IF ofm[4096],
@@ -597,4 +474,9 @@ void cl_maxpool(
   }
 
 }
+"""
 
+  print(code)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
