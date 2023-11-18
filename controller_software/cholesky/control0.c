@@ -14,6 +14,8 @@
 #define NUM_CORES 9
 
 int main() {
+  long long int ext_mem_offset;
+
   for (int c = 0; c < NUM_CORES; c++) {
     SYNC(c) = 0;
   }
@@ -54,7 +56,10 @@ int main() {
       LSU0_RAM_BLOCK_FACTOR = 1;
       LSU0_RAM_CYCLIC_FACTOR = 4;
 
-      LSU0_M_OFFSET_LO = (i * MAT_DIM * BLK_DIM + j * BLK_DIM) << 3;
+      ext_mem_offset = EXT_MEM_OFFSET + ((i * MAT_DIM * BLK_DIM + j * BLK_DIM) << 3);
+      LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+      LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+
       LSU0_MODE = 1;
       TQ_LSU0_START();
 
@@ -79,17 +84,27 @@ int main() {
         for (int k0 = 0; k0 < j; k0++) {
           if (pp == 0) {
             LSU0_RAM_START_IDX = 0;
-            LSU0_M_OFFSET_LO = (MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3;
+            ext_mem_offset = EXT_MEM_OFFSET + ((MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3);
+            LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+            LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+
             LSU1_RAM_START_IDX = 16;
-            LSU1_M_OFFSET_LO = (MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3;
+            ext_mem_offset = EXT_MEM_OFFSET + ((MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3);
+            LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+            LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
 
             KRN_PP = 2;
             pp = 1;
           } else {
             LSU0_RAM_START_IDX = 8;
-            LSU0_M_OFFSET_LO = (MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3;
+            ext_mem_offset = EXT_MEM_OFFSET + ((MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3);
+            LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+            LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+
             LSU1_RAM_START_IDX = 24;
-            LSU1_M_OFFSET_LO = (MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3;
+            ext_mem_offset = EXT_MEM_OFFSET +( (MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3);
+            LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+            LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
 
             KRN_PP = 1;
             pp = 0;
@@ -120,19 +135,27 @@ int main() {
         for (int k0 = 0; k0 < j; k0++) {
           if (pp == 0) {
             LSU0_RAM_START_IDX = 0;
-            LSU0_M_OFFSET_LO = (MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3;
+            ext_mem_offset = EXT_MEM_OFFSET + ((MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3);
+            LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+            LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
 
             LSU1_RAM_START_IDX = 16;
-            LSU1_M_OFFSET_LO = (MAT_DIM * MAT_DIM + i * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3;
+            ext_mem_offset = EXT_MEM_OFFSET + ((MAT_DIM * MAT_DIM + i * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3);
+            LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+            LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
 
             KRN_PP = 2;
             pp = 1;
           } else {
             LSU0_RAM_START_IDX = 8;
-            LSU0_M_OFFSET_LO = (MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3;
+            ext_mem_offset = EXT_MEM_OFFSET + ((MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3);
+            LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+            LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
 
             LSU1_RAM_START_IDX = 24;
-            LSU1_M_OFFSET_LO = (MAT_DIM * MAT_DIM + i * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3;
+            ext_mem_offset = EXT_MEM_OFFSET + ((MAT_DIM * MAT_DIM + i * MAT_DIM * BLK_DIM + k0 * BLK_DIM) << 3);
+            LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+            LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
 
             KRN_PP = 1;
             pp = 0;
@@ -155,7 +178,9 @@ int main() {
         }
 
         LSU1_RAM_START_IDX = 16;
-        LSU1_M_OFFSET_LO = (MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + j * BLK_DIM) << 3;
+        ext_mem_offset = EXT_MEM_OFFSET + ((MAT_DIM * MAT_DIM + j * MAT_DIM * BLK_DIM + j * BLK_DIM) << 3);
+        LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+        LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
 
         TQ_LSU1_START();
         TQ_LSU1_DONE();
@@ -170,7 +195,9 @@ int main() {
       LSU0_RAM_BLOCK_FACTOR = 1;
       LSU0_RAM_CYCLIC_FACTOR = 16;
       LSU0_RAM_START_IDX = 0;
-      LSU0_M_OFFSET_LO = (MAT_DIM * MAT_DIM + i * MAT_DIM * BLK_DIM + j * BLK_DIM) << 3;
+      ext_mem_offset = EXT_MEM_OFFSET + ((MAT_DIM * MAT_DIM + i * MAT_DIM * BLK_DIM + j * BLK_DIM) << 3);
+      LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+      LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
 
       LSU0_MODE = 2;
       TQ_LSU0_START();
@@ -179,30 +206,26 @@ int main() {
       if (i == j && j < ((MAT_DIM + BLK_DIM - 1) / BLK_DIM) - 1) {
         while (TQ_EMPTY_N == 1);
         //while (DMA0_WRITE_IDLE == 0);
-        long long int socket_offset = SOCKET1_NOC_ADDR + ((1<<16)<<6);
 
+        long long int socket_addr = SOCKET1_NOC_ADDR;
         for (int c = 1; c < NUM_CORES; c++) {
-          int socket_lo_offset = socket_offset & 0xFFFFFFFF;
-          int socket_hi_offset = socket_offset >> 32;
-          CTRL_MAXI_SOCKET_OFFSET_LO = socket_lo_offset + SYNC_OFFSET(0); 
-          CTRL_MAXI_SOCKET_OFFSET_HI = socket_hi_offset;
+          CTRL_MAXI_SOCKET_OFFSET_LO = ((socket_addr + MMIO_REGSPACE_OFFSET) & 0xFFFFFFFF) + SYNC_OFFSET(CORE_ID); 
+          CTRL_MAXI_SOCKET_OFFSET_HI = ((socket_addr + MMIO_REGSPACE_OFFSET) >> 32);
           CTRL_MAXI_WRITE = 1;
           while (CTRL_MAXI_WRITE_DONE == 0);
-
-          socket_offset += 0x40000000;
+          socket_addr += 0x40000000;
           if (c == 3)
-            socket_offset += 0x40000000;
+            socket_addr += 0x40000000;
         }
+
       }
     }
   }
 
   while (TQ_EMPTY_N == 1);
-  long long int socket_offset = SOCKET_MANAGER_NOC_ADDR + ((1<<16)<<6);
-  int socket_lo_offset = socket_offset & 0xFFFFFFFF;
-  int socket_hi_offset = socket_offset >> 32;
-  CTRL_MAXI_SOCKET_OFFSET_LO = socket_lo_offset + ((128 + CORE_ID)<<6); 
-  CTRL_MAXI_SOCKET_OFFSET_HI = socket_hi_offset;
+
+  CTRL_MAXI_SOCKET_OFFSET_LO = ((SOCKET_MANAGER_NOC_ADDR + MMIO_REGSPACE_OFFSET) & 0xFFFFFFFF) + ((128 + CORE_ID)<<6); 
+  CTRL_MAXI_SOCKET_OFFSET_HI = ((SOCKET_MANAGER_NOC_ADDR + MMIO_REGSPACE_OFFSET) >> 32);
   CTRL_MAXI_WRITE = 1;
   while (CTRL_MAXI_WRITE_DONE == 0);
 

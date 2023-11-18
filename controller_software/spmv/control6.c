@@ -17,6 +17,7 @@
 #define NUM_CORES 9
 
 int main() {
+  long long int ext_mem_offset;
 
   int x_len = (X_LEN < MAT_DIM) ? X_LEN : MAT_DIM;
 
@@ -52,7 +53,9 @@ int main() {
     LSU0_RAM_CYCLIC_FACTOR = 1;
 
     LSU0_LEN = Y_LEN / 8;
-    LSU0_M_OFFSET_LO = (Y_OFFSET + row_begin) << 3;
+    ext_mem_offset = EXT_MEM_OFFSET + ((Y_OFFSET + row_begin) << 3);
+    LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+    LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
 
     LSU0_MODE = 1;
     TQ_LSU0_START();
@@ -60,7 +63,9 @@ int main() {
 
     LSU0_RAM_START_IDX = 2;
     LSU0_LEN = (Y_LEN + 8) / 8;
-    LSU0_M_OFFSET_LO = (PTR_OFFSET + row_begin) << 3;
+    ext_mem_offset = EXT_MEM_OFFSET + ((PTR_OFFSET + row_begin) << 3);
+    LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+    LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
 
     LSU0_MODE = 1;
     TQ_LSU0_START();
@@ -109,8 +114,14 @@ int main() {
 
       LSU0_RAM_START_IDX = 4;
       LSU1_RAM_START_IDX = 12;
-      LSU0_M_OFFSET_LO = (X_OFFSET + 0) << 3;
-      LSU1_M_OFFSET_LO = (X_OFFSET + 0) << 3;
+      ext_mem_offset = EXT_MEM_OFFSET + ((X_OFFSET + 0) << 3);
+      LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+      LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+
+      ext_mem_offset = EXT_MEM_OFFSET + ((X_OFFSET + 0) << 3);
+      LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+      LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
+
       TQ_LSU0_START();
       TQ_LSU1_START();
 
@@ -143,7 +154,10 @@ int main() {
       LSU0_RAM_CYCLIC_FACTOR = 4;
 
       LSU0_LEN = len1_tmp;
-      LSU0_M_OFFSET_LO = (offset_tmp * 8) << 3;
+      ext_mem_offset = EXT_MEM_OFFSET + ((offset_tmp * 8) << 3);
+      LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+      LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+
       LSU0_MODE = 1;
 
       TQ_LSU0_START();
@@ -153,7 +167,10 @@ int main() {
       LSU1_RAM_BLOCK_FACTOR = 1;
       LSU1_RAM_CYCLIC_FACTOR = 4;
       LSU1_LEN = len1_tmp;
-      LSU1_M_OFFSET_LO = (offset_tmp * 8) << 3;
+      ext_mem_offset = EXT_MEM_OFFSET + ((offset_tmp * 8) << 3);
+      LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+      LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
+
       LSU1_MODE = 1;
 
       TQ_LSU1_START();
@@ -173,7 +190,10 @@ int main() {
         offset_tmp = (VAL_OFFSET + cur_ptr + len1) / 8;
         LSU0_RAM_START_IDX = 32;
         LSU0_LEN = len2_tmp;
-        LSU0_M_OFFSET_LO = (offset_tmp * 8) << 3;
+        ext_mem_offset = EXT_MEM_OFFSET + ((offset_tmp * 8) << 3);
+        LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+        LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+
         LSU0_MODE = 1;
 
         TQ_LSU0_START();
@@ -181,7 +201,10 @@ int main() {
         offset_tmp = (IND_OFFSET + cur_ptr + len1) / 8;
         LSU1_RAM_START_IDX = 36;
         LSU1_LEN = len2_tmp;
-        LSU1_M_OFFSET_LO = (offset_tmp * 8) << 3;
+        ext_mem_offset = EXT_MEM_OFFSET + ((offset_tmp * 8) << 3);
+        LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+        LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
+
         LSU1_MODE = 1;
 
         TQ_LSU1_START();
@@ -247,8 +270,14 @@ int main() {
         KRN_START = 1;
         TQ_CL_START();
         if (i + X_LEN < MAT_DIM) {
-        LSU0_M_OFFSET_LO = (X_OFFSET + i + X_LEN) << 3;
-        LSU1_M_OFFSET_LO = (X_OFFSET + i + X_LEN) << 3;
+        ext_mem_offset = EXT_MEM_OFFSET + ((X_OFFSET + i + X_LEN) << 3);
+        LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+        LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+
+        ext_mem_offset = EXT_MEM_OFFSET + ((X_OFFSET + i + X_LEN) << 3);
+        LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+        LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
+
         TQ_LSU0_START();
         TQ_LSU1_START();
         TQ_LSU0_DONE();
@@ -279,7 +308,9 @@ int main() {
     LSU0_RAM_CYCLIC_FACTOR = 1;
 
     LSU0_LEN = Y_LEN / 8;
-    LSU0_M_OFFSET_LO = (Y_OFFSET + row_begin) << 3;
+    ext_mem_offset = EXT_MEM_OFFSET + ((Y_OFFSET + row_begin) << 3);
+    LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
+    LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
 
     LSU0_MODE = 2;
     TQ_LSU0_START();
@@ -288,11 +319,8 @@ int main() {
 
   while (TQ_EMPTY_N == 1);
 
-  long long int socket_offset = SOCKET_MANAGER_NOC_ADDR + ((1<<16)<<6);
-  int socket_lo_offset = socket_offset & 0xFFFFFFFF;
-  int socket_hi_offset = socket_offset >> 32;
-  CTRL_MAXI_SOCKET_OFFSET_LO = socket_lo_offset + ((128 + CORE_ID)<<6); 
-  CTRL_MAXI_SOCKET_OFFSET_HI = socket_hi_offset;
+  CTRL_MAXI_SOCKET_OFFSET_LO = ((SOCKET_MANAGER_NOC_ADDR + MMIO_REGSPACE_OFFSET) & 0xFFFFFFFF) + ((128 + CORE_ID)<<6); 
+  CTRL_MAXI_SOCKET_OFFSET_HI = ((SOCKET_MANAGER_NOC_ADDR + MMIO_REGSPACE_OFFSET) >> 32);
   CTRL_MAXI_WRITE = 1;
   while (CTRL_MAXI_WRITE_DONE == 0);
 

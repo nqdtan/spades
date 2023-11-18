@@ -16,8 +16,6 @@
 typedef int64_t DATATYPE;
 
 #define SOCKET_CSR_OFFSET        64
-#define EXT_MEM_OFFSET_LO        65
-#define EXT_MEM_OFFSET_HI        66
 #define SOCKET_IMEM_ADDR_OFFSET  67
 #define SOCKET_IMEM_WDATA_OFFSET 68
 #define SOCKET_IMEM_WE_OFFSET    69
@@ -177,18 +175,6 @@ int main(int argc, char *argv[]) {
     while (ip.read_register(0x18) != 0) {
       //std::cout << std::hex << ip.read_register(0x18) << std::dec << '\n';
     }
-
-    ip.write_register(0x10, socket_addr + (EXT_MEM_OFFSET_LO << log2_byte_size));
-    ip.write_register(0x20, data_buf.address());
-    ip.write_register(0x0, 1); // commit
-    // check write idle
-    while (ip.read_register(0x18) != 0) {
-      //std::cout << std::hex << ip.read_register(0x18) << std::dec << '\n';
-    }
-
-    ip.write_register(0x10, socket_addr + (EXT_MEM_OFFSET_HI << log2_byte_size));
-    ip.write_register(0x20, data_buf.address() >> 32);
-    ip.write_register(0x0, 1); // commit
 
     // check write idle
     while (ip.read_register(0x18) != 0) {
