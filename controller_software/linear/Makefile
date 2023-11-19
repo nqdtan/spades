@@ -1,6 +1,6 @@
 # Master Makefile dependencies
 TARGET := control
 INCLUDE_LIB := true
-GCC_OPTS += -O1
+GCC_OPTS += -O2
 
 include ../Makefile.gcc.in
