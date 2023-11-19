@@ -34,7 +34,7 @@
 
 set src_dir ../socket_cc_flow/ff_bridge_s
 
-create_project -force kernel_pack_ff_bridge kernel_pack_ff_bridge
+create_project -force kernel_pack_ff_bridge kernel_pack_ff_bridge -part xcvc1902-vsvd1760-2MP-e-S
 add_files -norecurse [glob $src_dir/ff_bridge_s_bb.v]
 import_files $src_dir/ff_bridge_s_fixed.dcp
 

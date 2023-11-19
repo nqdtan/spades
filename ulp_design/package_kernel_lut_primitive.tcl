@@ -35,7 +35,7 @@
 set top lut1_primitive
 set src_dir ../rtl
 
-create_project -force kernel_pack_$top kernel_pack_$top
+create_project -force kernel_pack_$top kernel_pack_$top -part xcvc1902-vsvd1760-2MP-e-S
 add_files -norecurse [glob $src_dir/*.v]
 add_files -norecurse [glob $src_dir/*.vh]
 add_files -norecurse [glob $src_dir/riscv/*.v]

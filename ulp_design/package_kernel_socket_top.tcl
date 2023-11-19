@@ -38,7 +38,7 @@ set func [lindex $argv 2]
 
 set src_dir ../rtl
 
-create_project -force kernel_pack_$top kernel_pack_$top
+create_project -force kernel_pack_$top kernel_pack_$top -part xcvc1902-vsvd1760-2MP-e-S
 add_files -norecurse [glob $src_dir/*.v]
 add_files -norecurse [glob $src_dir/*.vh]
 add_files -norecurse [glob $src_dir/riscv/*.v]
@@ -46,9 +46,9 @@ add_files -norecurse [glob $src_dir/riscv/*.vh]
 add_files -norecurse [glob $src_dir/../socket_cc_flow/ff_bridge/ff_bridge.v]
 if { $app != "" } {
   add_files -norecurse [glob ../benchmarks/hls_kernel/${app}/proj/solution_${func}/syn/verilog/*.v]
-  #set tclFiles [glob -nocomplain ../benchmarks/hls_kernel/${app}/proj/solution_${func}/syn/verilog/*.tcl]
-  #foreach f $tclFiles {
-  #source $f }
+  set tclFiles [glob -nocomplain ../benchmarks/hls_kernel/${app}/proj/solution_${func}/syn/verilog/*.tcl]
+  foreach f $tclFiles {
+  source $f }
 }
 
 check_syntax
