@@ -13,15 +13,13 @@
 
 #define DEVICE_ID 0
 
-#define IFM0_LEN 128
-#define OFM0_LEN 256
-#define EPSILON 1e-5
+#define IFM_LEN 4096
+#define OFM_LEN 4096
+#define EPSILON 1e-1 // not numerical stable for large test size
 
 typedef float DATATYPE;
 
 #define SOCKET_CSR_OFFSET        64
-#define EXT_MEM_OFFSET_LO        65
-#define EXT_MEM_OFFSET_HI        66
 #define SOCKET_IMEM_ADDR_OFFSET  67
 #define SOCKET_IMEM_WDATA_OFFSET 68
 #define SOCKET_IMEM_WE_OFFSET    69
@@ -34,11 +32,12 @@ unsigned long diff(const struct timeval *newTime, const struct timeval *oldTime)
 
 void linear_baseline(DATATYPE *ifm, DATATYPE *ofm, DATATYPE *wt,
   int ifm_len, int ofm_len) {
+  int ifm_len_ceil = ((ifm_len + 15) / 16) * 16;
 
   for (int c = 0; c < ofm_len; c++) {
     DATATYPE tmp = 0;
     for (int i = 0; i < ifm_len; i++) {
-      tmp += ifm[i] * wt[c * ifm_len + i];
+      tmp += ifm[i] * wt[c * ifm_len_ceil + i];
     }
     ofm[c] = tmp;
   }
@@ -49,47 +48,49 @@ int main(int argc, char *argv[]) {
   struct timeval tstart, tend;
   int exec_time;
 
-  int wt0_len  = OFM0_LEN * IFM0_LEN;
-  int ifm0_len = IFM0_LEN;
-  int ofm0_len = OFM0_LEN;
-  int m_len = wt0_len + ifm0_len + ofm0_len;
+  int ifm_len = IFM_LEN;
+  int ofm_len = OFM_LEN;
+  int ifm_len_ceil = ((ifm_len + 15) / 16) * 16;
+  int ofm_len_ceil = ((ofm_len + 15) / 16) * 16;
+  int wt_len  = ifm_len_ceil * ofm_len;
+  int m_len = wt_len + ifm_len_ceil + ofm_len_ceil;
 
   DATATYPE *m = new DATATYPE [m_len];
   for (int i = 0; i < m_len; i++)
     m[m_len] = 0;
 
-  DATATYPE *wt0  = &m[0];
-  DATATYPE *ifm0 = &m[wt0_len];
-  DATATYPE *ofm0 = &m[wt0_len + ifm0_len];
+  DATATYPE *wt  = &m[0];
+  DATATYPE *ifm = &m[wt_len];
+  DATATYPE *ofm = &m[wt_len + ifm_len_ceil];
 
-  DATATYPE *ofm0_gold = new DATATYPE [ofm0_len];
+  DATATYPE *ofm_gold = new DATATYPE [ofm_len];
 
   int value;
 
   value = 0;
-  for (int t = 0; t < OFM0_LEN; t++) {
-    for (int i = 0; i < IFM0_LEN; i++) {
-      //wt0[t * ifm0_len + i] = value;
-      wt0[t * ifm0_len + i] = (rand() % IFM0_LEN) * 1.0f / IFM0_LEN;
+  for (int t = 0; t < ofm_len; t++) {
+    for (int i = 0; i < ifm_len; i++) {
+      //wt[t * ifm_len + i] = value;
+      wt[t * ifm_len_ceil + i] = (rand() % ifm_len) * 1.0f / ifm_len;
       value++;
     }
   }
 
   value = 0;
-  for (int i = 0; i < IFM0_LEN; i++) {
-    //ifm0[i] = value;
-    ifm0[i] = (rand() % IFM0_LEN) * 1.0f / IFM0_LEN;
+  for (int i = 0; i < ifm_len; i++) {
+    //ifm[i] = value;
+    ifm[i] = (rand() % ifm_len) * 1.0f / ifm_len;
     value++;
   }
 
   value = 0;
-  for (int i = 0; i < OFM0_LEN; i++) {
-    ofm0[i] = 0;//value;
-    //ofm0[i] = (rand() % OFM0_LEN) * 1.0f / OFM0_LEN;
+  for (int i = 0; i < ofm_len; i++) {
+    ofm[i] = 0;//value;
+    //ofm[i] = (rand() % OFM_LEN) * 1.0f / OFM_LEN;
     value++;
   }
 
-  memcpy(ofm0_gold, ofm0, ofm0_len * sizeof(DATATYPE));
+  memcpy(ofm_gold, ofm, ofm_len * sizeof(DATATYPE));
 
   std::string xclbin_file;
   std::cout << "Program running in hardware mode" << std::endl;
@@ -210,25 +211,6 @@ int main(int argc, char *argv[]) {
       //std::cout << std::hex << ip.read_register(0x18) << std::dec << '\n';
     }
 
-    ip.write_register(0x10, socket_addr + (EXT_MEM_OFFSET_LO << log2_byte_size));
-    //ip.write_register(0x20, data_buf.address());
-    ip.write_register(0x20, 0);
-    ip.write_register(0x0, 1); // commit
-    // check write idle
-    while (ip.read_register(0x18) != 0) {
-      //std::cout << std::hex << ip.read_register(0x18) << std::dec << '\n';
-    }
-
-    ip.write_register(0x10, socket_addr + (EXT_MEM_OFFSET_HI << log2_byte_size));
-    //ip.write_register(0x20, data_buf.address() >> 32);
-    ip.write_register(0x20, 0);
-    ip.write_register(0x0, 1); // commit
-
-    // check write idle
-    while (ip.read_register(0x18) != 0) {
-      //std::cout << std::hex << ip.read_register(0x18) << std::dec << '\n';
-    }
-
     ip.write_register(0x10, socket_addr + (SOCKET_CSR_OFFSET << log2_byte_size));
     ip.write_register(0x20, 1);
     while (ip.read_register(0x18) != 0) {
@@ -312,21 +294,21 @@ int main(int argc, char *argv[]) {
   std::cout << "Run sw version...\n" ;
   gettimeofday(&tstart, 0);
 
-  linear_baseline(ifm0, ofm0_gold, wt0, ifm0_len, ofm0_len);
+  linear_baseline(ifm, ofm_gold, wt, ifm_len, ofm_len);
 
   gettimeofday(&tend, 0);
   exec_time = diff(&tend, &tstart);
   std::cout << "Execution time: " << exec_time << " us" << std::endl;
 
   for (int i = 0; i < 16; i++) {
-    std::cout << "ofm0[" << i << "]=" << ofm0[i] << ", ofm0_gold[" << i << "]=" << ofm0_gold[i] << ", diff=" << fabs(ofm0[i] - ofm0_gold[i]) << '\n';
+    std::cout << "ofm[" << i << "]=" << ofm[i] << ", ofm_gold[" << i << "]=" << ofm_gold[i] << ", diff=" << fabs(ofm[i] - ofm_gold[i]) << '\n';
   }
 
   int num_mismatches = 0;
-  for (int i = 0; i < ofm0_len; i++) {
-    if (fabs(ofm0[i] - ofm0_gold[i]) > EPSILON) {
+  for (int i = 0; i < ofm_len; i++) {
+    if (fabs(ofm[i] - ofm_gold[i]) > EPSILON) {
       num_mismatches += 1;
-      //std::cout << "err at i=" << i << " ofm0=" << ofm0[i] << ", ofm0_gold=" << ofm0_gold[i] << ", diff=" << fabs(ofm0[i] - ofm0_gold[i]) << '\n';
+      //std::cout << "err at i=" << i << " ofm=" << ofm[i] << ", ofm_gold=" << ofm_gold[i] << ", diff=" << fabs(ofm[i] - ofm_gold[i]) << '\n';
     }
   }
 
@@ -336,5 +318,5 @@ int main(int argc, char *argv[]) {
     std::cout << "Test Failed! Num. mismatches: " << std::dec << num_mismatches << std::endl;
 
   delete(m);
-  delete(ofm0_gold);
+  delete(ofm_gold);
 }
