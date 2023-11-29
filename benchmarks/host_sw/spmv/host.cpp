@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
   int64_t socket_addr;
   int control_offset = 0;
 
-  int64_t socket_addrs[9] = {
+  int64_t socket_addrs[12] = {
     0x00000000000,
     0x00040000000,
     0x00080000000,
@@ -210,7 +210,10 @@ int main(int argc, char *argv[]) {
     0x00180000000,
     0x001c0000000,
     0x00200000000,
-    0x00240000000
+    0x00240000000,
+    0x00280000000,
+    0x002c0000000,
+    0x00300000000
   };
   // CHECK INDIVIDUAL SOCKET
   socket_base_addr += socket_offset * 0;
