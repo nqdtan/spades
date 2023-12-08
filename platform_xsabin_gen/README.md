@@ -24,7 +24,7 @@ xbutil examine -d <user BDF>
 
 The output should be similar to 
 
-![alt text](https://github.com/nqdtan/spades/blob/master/img/platform_uuid_example.png?raw=true)
+![alt text](https://github.com/nqdtan/spades/blob/master/docs/img/platform_uuid_example.png?raw=true)
 
 
 Next, add the following two lines to the pre OPT tcl hook script `./xilinx_vck5000_gen4x8_qdma_2_202220_1/prj/prj.srcs/utils_1/imports/tcl_hooks/opt.pre.tcl`

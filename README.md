@@ -1,6 +1,6 @@
-# Spatially Distributed Socket Engines (SPADES)
+# Spatially Distributed Ensemble of Sockets (SPADES)
 
-**A Fast, Composable, and Modular Hardware Design Method for Versal Programmable Logic**
+**A Modular, Composable, and Reusable Hardware Design Method for Versal Programmable Logic**
 
 Documentation in-progress
 
