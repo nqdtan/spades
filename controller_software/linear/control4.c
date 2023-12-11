@@ -26,7 +26,9 @@ int main() {
     int ofm_len = ((i + 1) * OFM_CNT * OFM_BLK_LEN > OFM_LEN) ? (OFM_LEN - i * OFM_CNT * OFM_BLK_LEN) : OFM_BLK_LEN;
 
     for (int j = 0; j < (IFM_LEN + (IFM_CNT * IFM_BLK_LEN) - 1) / (IFM_CNT * IFM_BLK_LEN); j+=1) {
-      int ifm_len = ((j + 1) * IFM_CNT * IFM_BLK_LEN > IFM_LEN) ? (IFM_LEN - j * IFM_CNT * IFM_BLK_LEN) : IFM_BLK_LEN;
+      int ifm_len0 = ((j + 1) * IFM_CNT * IFM_BLK_LEN > IFM_LEN) ? (IFM_LEN - j * IFM_CNT * IFM_BLK_LEN) : (IFM_CNT * IFM_BLK_LEN);
+      int ifm_cnt = ((j + 1) * IFM_CNT * IFM_BLK_LEN > IFM_LEN) ? (ifm_len0 / IFM_BLK_LEN) : IFM_CNT;
+      int ifm_len = (ifm_len0 >= IFM_BLK_LEN) ? IFM_BLK_LEN : ifm_len0;
 
       // fetch ifm
       LSU0_RAM_START_IDX = 32;
@@ -44,7 +46,7 @@ int main() {
       TQ_LSU0_START();
       TQ_LSU0_DONE();
 
-      for (int t = 0; t < IFM_CNT; t++) {
+      for (int t = 0; t < ifm_cnt; t++) {
       for (int k = 0; k < OFM_CNT; k++) {
         // fetch wt
         LSU0_RAM_START_IDX = 0;

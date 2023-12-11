@@ -1,23 +1,9 @@
 #include "memory_map.h"
 #include "kernel_mmio.h"
-
-#define IFM_LEN 32
-#define OFM_LEN 128
-
-#define IFM_BLK_LEN 16
-#define OFM_BLK_LEN 64
-#define IFM_CNT 1
-#define OFM_CNT 1
-
-#define IFM_LEN_CEIL (((IFM_LEN + 15) / 16) * 16)
-#define OFM_LEN_CEIL (((OFM_LEN + 15) / 16) * 16)
-#define WT_LEN       (IFM_LEN_CEIL * OFM_LEN)
-
-#define WORD_SCALE (512 / 32)
-#define LOG2_WORD_SIZE 2
-#define LSU_WIDTH_SCALE (64 / 32)
+#include "linear.h"
 
 #define CORE_ID 0
+#define NUM_CORES 9
 
 int main() {
   long long int ext_mem_offset;
@@ -36,12 +22,13 @@ int main() {
   LSU1_SEG_STRIDE = 0;
   LSU1_SEG_COUNT = 1;
 
-  for (int i = 0; i < (OFM_LEN + (OFM_CNT * OFM_BLK_LEN) - 1) / (OFM_CNT * OFM_BLK_LEN); i+=1) {
-    //int ofm_len = ((i + 1) * OFM_CNT * OFM_BLK_LEN > OFM_LEN) ? (OFM_LEN - i * OFM_CNT * OFM_BLK_LEN) : OFM_BLK_LEN;
-    int ofm_len = OFM_BLK_LEN;
+  for (int i = CORE_ID; i < (OFM_LEN + (OFM_CNT * OFM_BLK_LEN) - 1) / (OFM_CNT * OFM_BLK_LEN); i+=NUM_CORES) {
+    int ofm_len = ((i + 1) * OFM_CNT * OFM_BLK_LEN > OFM_LEN) ? (OFM_LEN - i * OFM_CNT * OFM_BLK_LEN) : OFM_BLK_LEN;
 
     for (int j = 0; j < (IFM_LEN + (IFM_CNT * IFM_BLK_LEN) - 1) / (IFM_CNT * IFM_BLK_LEN); j+=1) {
-      int ifm_len = IFM_BLK_LEN;
+      int ifm_len0 = ((j + 1) * IFM_CNT * IFM_BLK_LEN > IFM_LEN) ? (IFM_LEN - j * IFM_CNT * IFM_BLK_LEN) : (IFM_CNT * IFM_BLK_LEN);
+      int ifm_cnt = ((j + 1) * IFM_CNT * IFM_BLK_LEN > IFM_LEN) ? (ifm_len0 / IFM_BLK_LEN) : IFM_CNT;
+      int ifm_len = (ifm_len0 >= IFM_BLK_LEN) ? IFM_BLK_LEN : ifm_len0;
 
       // fetch ifm
       LSU0_RAM_START_IDX = 32;
@@ -50,7 +37,7 @@ int main() {
       LSU0_RAM_CYCLIC_FACTOR = 1;
       ext_mem_offset = EXT_MEM_OFFSET + ((WT_LEN + j * IFM_CNT * IFM_BLK_LEN) << LOG2_WORD_SIZE);
       LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
-      //LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+      LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
       LSU0_SEG_STRIDE = 0;
       LSU0_SEG_COUNT = 1;
       LSU0_LEN = IFM_CNT * IFM_BLK_LEN / WORD_SCALE;
@@ -59,7 +46,7 @@ int main() {
       TQ_LSU0_START();
       TQ_LSU0_DONE();
 
-      for (int t = 0; t < IFM_CNT; t++) {
+      for (int t = 0; t < ifm_cnt; t++) {
       for (int k = 0; k < OFM_CNT; k++) {
         // fetch wt
         LSU0_RAM_START_IDX = 0;
@@ -68,7 +55,7 @@ int main() {
         LSU0_RAM_CYCLIC_FACTOR = 16;
         ext_mem_offset = EXT_MEM_OFFSET + ((i * OFM_CNT * OFM_BLK_LEN * IFM_LEN_CEIL + k * OFM_BLK_LEN * IFM_LEN_CEIL + j * IFM_CNT * IFM_BLK_LEN + t * IFM_BLK_LEN) << LOG2_WORD_SIZE);
         LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
-        //LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+        LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
         LSU0_SEG_STRIDE = IFM_LEN_CEIL / WORD_SCALE;
         LSU0_SEG_COUNT = OFM_BLK_LEN / 2;
         LSU0_LEN = IFM_BLK_LEN / WORD_SCALE;
@@ -83,7 +70,7 @@ int main() {
           LSU1_RAM_CYCLIC_FACTOR = 16;
           ext_mem_offset = EXT_MEM_OFFSET + ((i * OFM_CNT * OFM_BLK_LEN * IFM_LEN_CEIL + k * OFM_BLK_LEN * IFM_LEN_CEIL + j * IFM_CNT * IFM_BLK_LEN + t * IFM_BLK_LEN + (OFM_BLK_LEN / 2) * IFM_LEN_CEIL) << LOG2_WORD_SIZE);
           LSU1_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
-          //LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
+          LSU1_M_OFFSET_HI = (ext_mem_offset >> 32);
           LSU1_SEG_STRIDE = IFM_LEN_CEIL / WORD_SCALE;
           LSU1_SEG_COUNT = OFM_BLK_LEN / 2;
           LSU1_LEN = IFM_BLK_LEN / WORD_SCALE;
@@ -108,14 +95,14 @@ int main() {
     }
 
     // write ofm
-    int ofm_len_tmp = ofm_len;//((ofm_len + WORD_SCALE - 1) / WORD_SCALE) * WORD_SCALE;
+    int ofm_len_tmp = ((ofm_len + WORD_SCALE - 1) / WORD_SCALE) * WORD_SCALE;
     LSU0_RAM_START_IDX =33;
     LSU0_RAM_ADDR_OFFSET = 0;
     LSU0_RAM_BLOCK_FACTOR = OFM_CNT * ofm_len_tmp / LSU_WIDTH_SCALE;
     LSU0_RAM_CYCLIC_FACTOR = 1;
     ext_mem_offset = EXT_MEM_OFFSET + ((WT_LEN + IFM_LEN_CEIL + i * OFM_CNT * OFM_BLK_LEN) << LOG2_WORD_SIZE);
     LSU0_M_OFFSET_LO = (ext_mem_offset & 0xFFFFFFFF);
-    //LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
+    LSU0_M_OFFSET_HI = (ext_mem_offset >> 32);
     LSU0_SEG_STRIDE = 0;
     LSU0_SEG_COUNT = 1;
     LSU0_LEN = OFM_CNT * ofm_len_tmp / WORD_SCALE;
