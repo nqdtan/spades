@@ -2,10 +2,10 @@
 #include "kernel_mmio_conv3d.h"
 #include "nn.h"
 
-#define CORE_ID 1
+#define CORE_ID 3
 #define NUM_CORES 9
 
-#define CONV3D_CORE_ID 1
+#define CONV3D_CORE_ID 3
 #define CONV3D_NUM_CORES 4
 
 void sync_with_conv3d_master_core() {

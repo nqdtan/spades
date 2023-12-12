@@ -22,16 +22,20 @@
 #define IFM_DIM 13
 #define WT_DIM 3
 #define OFM_DIM (IFM_DIM + 2 * PAD - WT_DIM + 1)
-#define CONV3D0_IFM_CHN 128//192
-#define CONV3D0_OFM_CHN 256//384
+#define CONV3D0_IFM_CHN 192
+#define CONV3D0_OFM_CHN 384
 
 #define CONV3D1_IFM_CHN (CONV3D0_OFM_CHN)
-#define CONV3D1_OFM_CHN 32
+#define CONV3D1_OFM_CHN 256
 
-#define LINEAR0_IFM_LEN 5632
-#define LINEAR0_OFM_LEN 1024
+#define LINEAR0_IFM_LEN 45056
+#define LINEAR0_OFM_LEN 4096
 
-#define LINEAR1_OFM_LEN 512
+#define LINEAR1_IFM_LEN (LINEAR1_OFM_LEN)
+#define LINEAR1_OFM_LEN 4096
+
+#define LINEAR2_IFM_LEN (LINEAR2_OFM_LEN)
+#define LINEAR2_OFM_LEN 1000
 
 typedef float DATATYPE;
 
@@ -57,6 +61,7 @@ int main(int argc, char *argv[]) {
   conv3d_layer layer1{&layer0, WT_DIM, P_DIM, CONV3D1_OFM_CHN, STRIDE, PAD};
   linear_layer layer2{&layer1, LINEAR0_OFM_LEN};
   linear_layer layer3{&layer2, LINEAR1_OFM_LEN};
+  linear_layer layer4{&layer3, LINEAR2_OFM_LEN};
 
 //  linear_layer layer0{LINEAR0_IFM_LEN, LINEAR0_OFM_LEN};
 
@@ -64,9 +69,10 @@ int main(int argc, char *argv[]) {
   int layer1_m_offset = layer0_m_offset + layer0.get_m_len();
   int layer2_m_offset = layer1_m_offset + layer1.get_m_len();
   int layer3_m_offset = layer2_m_offset + layer2.get_m_len();
+  int layer4_m_offset = layer3_m_offset + layer3.get_m_len();
 
 //  int m_len = layer0.get_m_len();
-  int m_len = layer0.get_m_len() + layer1.get_m_len() + layer2.get_m_len() + layer3.get_m_len();
+  int m_len = layer0.get_m_len() + layer1.get_m_len() + layer2.get_m_len() + layer3.get_m_len() + layer4.get_m_len();
 
   std::cout << "m_len " << m_len << '\n';
 
@@ -74,7 +80,8 @@ int main(int argc, char *argv[]) {
   layer0.copy_m_data(m);
   layer1.copy_m_data(&m[layer1_m_offset]);
   layer2.copy_m_data(&m[layer2_m_offset]);
-  layer3.copy_m_data(m + layer3_m_offset);
+  layer3.copy_m_data(&m[layer3_m_offset]);
+  layer4.copy_m_data(&m[layer4_m_offset]);
 
   std::string xclbin_file;
   std::cout << "Program running in hardware mode" << std::endl;
@@ -300,7 +307,8 @@ int main(int argc, char *argv[]) {
   layer0.run();
   layer1.run();
   layer2.run();
-  layer3.run_baseline();
+  layer3.run();
+  layer4.run_baseline();
 
 
   gettimeofday(&tend, 0);
@@ -310,7 +318,8 @@ int main(int argc, char *argv[]) {
   //layer0.verify(&m[layer0_m_offset]);
   //layer1.verify(&m[layer1_m_offset]);
   //layer2.verify(&m[layer2_m_offset]);
-  layer3.verify(&m[layer3_m_offset]);
+  //layer3.verify(&m[layer3_m_offset]);
+  layer4.verify(&m[layer4_m_offset]);
 
   delete[] m;
 }
