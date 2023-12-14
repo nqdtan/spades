@@ -1,0 +1,317 @@
+{
+  "FullShell": true,
+  "SocketDesigns": [
+    {
+      "DesignId": 0,
+      "ImplId": 0,
+      "Flow": "separateCCCL",
+      "DcpName": "socket_rw_full_v0.conv3d"
+    },
+    {
+      "DesignId": 1,
+      "ImplId": 0,
+      "Flow": "separateCCCL",
+      "DcpName": "socket_rw_full_v0.linear"
+    }
+  ],
+  "SocketIds": [
+    {
+      "SocketId": 0,
+      "DesignId": 0,
+      "XOffset": -2,
+      "YOffset": -1
+    },
+    {
+      "SocketId": 1,
+      "DesignId": 0,
+      "XOffset": 0,
+      "YOffset": -1
+    },
+    {
+      "SocketId": 2,
+      "DesignId": 0,
+      "XOffset": 2,
+      "YOffset": -1
+    },
+    {
+      "SocketId": 3,
+      "DesignId": 1,
+      "XOffset": -2,
+      "YOffset": 0
+    },
+    {
+      "SocketId": 4,
+      "DesignId": 1,
+      "XOffset": 0,
+      "YOffset": 0
+    },
+    {
+      "SocketId": 5,
+      "DesignId": 1,
+      "XOffset": 2,
+      "YOffset": 0
+    },
+    {
+      "SocketId": 6,
+      "DesignId": 1,
+      "XOffset": -2,
+      "YOffset": 1
+    },
+    {
+      "SocketId": 7,
+      "DesignId": 1,
+      "XOffset": 0,
+      "YOffset": 1
+    },
+    {
+      "SocketId": 8,
+      "DesignId": 1,
+      "XOffset": 2,
+      "YOffset": 1
+    }
+  ],
+  "SocketConnects": [
+    {
+      "NMUSocketId": 0,
+      "NSUSocketId": 1,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 0,
+      "NSUSocketId": 2,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 0,
+      "NSUSocketId": 3,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+
+    {
+      "NMUSocketId": 1,
+      "NSUSocketId": 0,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 2,
+      "NSUSocketId": 0,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 3,
+      "NSUSocketId": 0,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+
+    {
+      "NMUSocketId": 3,
+      "NSUSocketId": 4,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 3,
+      "NSUSocketId": 5,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 3,
+      "NSUSocketId": 6,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 3,
+      "NSUSocketId": 7,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 3,
+      "NSUSocketId": 8,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+
+    {
+      "NMUSocketId": 4,
+      "NSUSocketId": 3,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 5,
+      "NSUSocketId": 3,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 6,
+      "NSUSocketId": 3,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 7,
+      "NSUSocketId": 3,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 8,
+      "NSUSocketId": 3,
+      "NMUName": "S00",
+      "NSUName": "M00",
+      "Type": "AXI"
+    },
+
+    {
+      "NMUSocketId": 0,
+      "NSUSocketId": 28,
+      "NMUName": "S00",
+      "NSUName": "2",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 0,
+      "NSUSocketId": 28,
+      "NMUName": "S01",
+      "NSUName": "3",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 1,
+      "NSUSocketId": 28,
+      "NMUName": "S00",
+      "NSUName": "2",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 1,
+      "NSUSocketId": 28,
+      "NMUName": "S01",
+      "NSUName": "3",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 2,
+      "NSUSocketId": 28,
+      "NMUName": "S00",
+      "NSUName": "2",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 2,
+      "NSUSocketId": 28,
+      "NMUName": "S01",
+      "NSUName": "3",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 3,
+      "NSUSocketId": 28,
+      "NMUName": "S00",
+      "NSUName": "2",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 3,
+      "NSUSocketId": 28,
+      "NMUName": "S01",
+      "NSUName": "3",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 4,
+      "NSUSocketId": 28,
+      "NMUName": "S00",
+      "NSUName": "2",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 4,
+      "NSUSocketId": 28,
+      "NMUName": "S01",
+      "NSUName": "3",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 5,
+      "NSUSocketId": 28,
+      "NMUName": "S00",
+      "NSUName": "2",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 5,
+      "NSUSocketId": 28,
+      "NMUName": "S01",
+      "NSUName": "3",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 6,
+      "NSUSocketId": 28,
+      "NMUName": "S00",
+      "NSUName": "2",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 6,
+      "NSUSocketId": 28,
+      "NMUName": "S01",
+      "NSUName": "3",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 7,
+      "NSUSocketId": 28,
+      "NMUName": "S00",
+      "NSUName": "2",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 7,
+      "NSUSocketId": 28,
+      "NMUName": "S01",
+      "NSUName": "3",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 8,
+      "NSUSocketId": 28,
+      "NMUName": "S00",
+      "NSUName": "2",
+      "Type": "AXI"
+    },
+    {
+      "NMUSocketId": 8,
+      "NSUSocketId": 28,
+      "NMUName": "S01",
+      "NSUName": "3",
+      "Type": "AXI"
+    }
+  ]
+}
